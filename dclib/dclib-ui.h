@@ -75,6 +75,7 @@ enum // some const
 typedef struct InfoOption_t
 {
     int			id;		// id of the option
+    bool		optional_parm;	// true: option has optional parameters
     bool		hidden;		// true: option is hidden
     bool		deprecated;	// true: option is deprecated
     bool		ignore;		// true: ignore on 'HELP OPTIONS'

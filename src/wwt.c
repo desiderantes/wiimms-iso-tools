@@ -3969,8 +3969,7 @@ enumError CheckOptions ( int argc, char ** argv, bool is_env )
 	case GO_COLOR_256:	opt_colorize = COLMD_256_COLORS; break;
 	case GO_NO_COLOR:	opt_colorize = -1; break;
 	case GO_IO:		ScanIOMode(optarg); break;
-	case GO_DSYNC:		opt_dsync++; break;
-	case GO_DIRECT:		opt_direct++; break;
+	case GO_DSYNC:		err += ScanOptDSync(optarg); break;
 
 	case GO_TITLES:		AtFileHelper(optarg,0,0,AddTitleFile); break;
 	case GO_UTF_8:		use_utf8 = true; break;

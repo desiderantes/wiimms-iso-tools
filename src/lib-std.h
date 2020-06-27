@@ -74,13 +74,6 @@
     #define NO_PREALLOC 1
 #endif
 
-// SUPPORT_DIRECT is not completed, so disable the support!
-#ifdef TEST
- #define SUPPORT_DIRECT 0	// 0=off, 1:on, 2=on+logs
-#else
- #define SUPPORT_DIRECT 0
-#endif
-
 #ifndef OPT_OLD_NEW
  #define OPT_OLD_NEW 1
 #endif
@@ -184,9 +177,6 @@ void CloseAll();
  #define CloseOutWFile(o,s)	XCloseOutWFile	(__FUNCTION__,__FILE__,__LINE__,o,s)
  #define RemoveOutWFile(o)	XRemoveOutWFile	(__FUNCTION__,__FILE__,__LINE__,o)
 
- #define WriteDirectAtF(f,o,b,c,d,s) \
-				XWriteDirectAtF	(__FUNCTION__,__FILE__,__LINE__,f,o,b,c,d,s)
-
 #else
 
  #define XPARM
@@ -223,8 +213,6 @@ void CloseAll();
  #define CloseOutWFile(o,s)	XCloseOutWFile	(o,s)
  #define RemoveOutWFile(o)	XRemoveOutWFile	(o)
 
- #define WriteDirectAtF(f,o,b,c,d,s) XWriteDirectAtF(f,o,b,c,d,s)
-
 #endif
 
 //
@@ -255,12 +243,14 @@ typedef enum enumIOMode
 
 } enumIOMode;
 
-extern int opt_dsync;
-extern int opt_direct;
 extern enumIOMode opt_iomode;
 void ScanIOMode ( ccp arg );
 
+extern OffOn_t opt_dsync;
+int ScanOptDSync ( ccp arg );
+
 //-----------------------------------------------------------------------------
+// [[enumOFT]]
 
 typedef enum enumOFT // open file mode
 {
@@ -282,6 +272,7 @@ typedef enum enumOFT // open file mode
 } enumOFT;
 
 //-----------------------------------------------------------------------------
+// [[attribOFT]]
 
 typedef enum attribOFT // OFT attributes
 {
@@ -495,7 +486,6 @@ typedef struct WFile_t
     int		open_flags;		// proposed open flags; if zero then ignore
     bool	disable_errors;		// don't print error messages
     bool	create_directory;	// create direcotries automatically
-    bool	allow_direct_io;	// allow the usage of O_DIRECT
     int		already_created_mode;	// 0:ignore, 1:warn, 2:error+abort
 
 
@@ -528,11 +518,6 @@ typedef struct WFile_t
 
     bool	prealloc_done;		// true if preallocation was done
     MemMap_t	prealloc_map;		// store prealloc areas until first write
-
-
-    //--- O_DIRECT support
-
-    u32		direct_block_size;	// ioctl(BLKSSZGET)
 
 
     //--- split file support
@@ -609,18 +594,6 @@ enumError XReadAtF	 ( XPARM WFile_t * f, off_t off,       void * iobuf, size_t c
 enumError XWriteAtF	 ( XPARM WFile_t * f, off_t off, const void * iobuf, size_t count );
 enumError XWriteZeroAtF	 ( XPARM WFile_t * f, off_t off,                     size_t count );
 enumError XZeroAtF	 ( XPARM WFile_t * f, off_t off,                     size_t count );
-
-enumError XWriteDirectAtF
-(
-    XPARM				// XPARM
-    WFile_t		*f,		// file to write (and read for partial blocks)
-    off_t		off,		// offset to write
-    const void		*io_buf,	// data to write
-    size_t		io_size,	// size of data to write
-    void		*d_buf,		// aligned direct buffer
-					// if NULL: malloc temporary buffer of 'd_size'
-    size_t		d_size		// size of 'd_buf' or size to alloc
-);
 
 enumError ExecSeekF ( WFile_t * f, off_t off );
 
@@ -1472,15 +1445,9 @@ extern StringField_t	created_files;
 
 #define IOBUF_SIZE	0x400000
 #define ZEROBUF_SIZE	0x40000
-#define DIRECTBUF_SIZE	0x4000
-#define DIRECTBUF_ALIGN	0x1000
 
 extern       char	iobuf[IOBUF_SIZE];		// global io buffer
 extern const char	zerobuf[ZEROBUF_SIZE];		// global zero buffer
-
-#if SUPPORT_DIRECT
- extern char		directbuf[DIRECTBUF_SIZE];	// global direct-io buffer
-#endif
 
 //-----------------------------------
 

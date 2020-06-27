@@ -1271,6 +1271,13 @@ char * SkipControlsE2 ( ccp src, ccp end, char ch1, char ch2 );
 
 //-----------------------------------------------------
 
+// return the number of chars until first EOL ( \0 | \r | \n );
+// pointer are NULL save
+uint LineLen  ( ccp ptr );
+uint LineLenE ( ccp ptr, ccp end );
+
+//-----------------------------------------------------
+
 uint TrimBlanks
 (
     char	*str,		// pointer to string, modified
@@ -1637,6 +1644,7 @@ static inline bool InContainerE ( const Container_t * c, cvp ptr, cvp end )
 		&& end && (u8*)end <= c->cdata->data + c->cdata->size; }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 struct ColorSet_t;
 uint DumpInfoContainer
 (
@@ -1784,6 +1792,18 @@ extern const u32 TableCRC32[0x100];
 u32 CalcCRC32 ( u32 crc, cvp buf, uint size );
 
 ///////////////////////////////////////////////////////////////////////////////
+// [[CharMode_t]]
+
+typedef enum CharMode_t // select encodig/decoding method
+{
+    CHMD_UTF8		= 0x01,  // UTF8 support enabled (compatible with legacy bool)
+    CHMD_ESC		= 0x02,  // escape ESC by \e
+
+    CHMD__ALL		= CHMD_UTF8 | CHMD_ESC,
+}
+__attribute__ ((packed)) CharMode_t;
+
+///////////////////////////////////////////////////////////////////////////////
 // [[EncodeMode_t]]
 
 typedef enum EncodeMode_t // select encodig/decoding method
@@ -1837,11 +1857,13 @@ extern ccp TableDecode64default, TableEncode64default;
 
 char * PrintEscapedString
 (
+    // returns 'buf'
+
     char	*buf,			// valid destination buffer
     uint	buf_size,		// size of 'buf', >= 10
     ccp		source,			// NULL string to print
     int		len,			// length of string. if -1, str is null terminated
-    bool	utf8,			// true: don't escape special ANSI characters
+    CharMode_t	char_mode,		// modes, bit field (CHMD_*)
     char	quote,			// NULL or quotation char, that must be quoted
     uint	*scanned_len		// not NULL: Store number of scanned 'str' bytes here
 );
@@ -1854,7 +1876,7 @@ uint ScanEscapedString
 
     char	*buf,			// valid destination buffer, maybe source
     uint	buf_size,		// size of 'buf'
-    ccp		source,			// string to print
+    ccp		source,			// string to scan
     int		len,			// length of string. if -1, str is null terminated
     bool	utf8,			// true: source and output is UTF-8
     uint	*scanned_len		// not NULL: Store number of scanned 'source' bytes here
@@ -2036,12 +2058,41 @@ const KeywordTab_t *GetKewordById
     s64			id		// id to search
 );
 
+//-----------------------------------------------------------------------------
+
 const KeywordTab_t *GetKewordByIdAndOpt
 (
     const KeywordTab_t	*key_tab,	// NULL or pointer to command table
     s64			id,		// id to search
     s64			opt		// opt to search
 );
+
+//-----------------------------------------------------------------------------
+
+static inline ccp GetKewordNameById
+(
+    const KeywordTab_t	*key_tab,	// NULL or pointer to command table
+    s64			id,		// id to search
+    ccp			res_not_found	// return this if not found
+)
+{
+    const KeywordTab_t *key = GetKewordById(key_tab,id);
+    return key ? key->name1 : res_not_found;
+}
+
+//-----------------------------------------------------------------------------
+
+static inline ccp GetKewordNameByIdAndOpt
+(
+    const KeywordTab_t	*key_tab,	// NULL or pointer to command table
+    s64			id,		// id to search
+    s64			opt,		// opt to search
+    ccp			res_not_found	// return this if not found
+)
+{
+    const KeywordTab_t *key = GetKewordByIdAndOpt(key_tab,id,opt);
+    return key ? key->name1 : res_not_found;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -2160,14 +2211,16 @@ int ScanKeywordOffOn
 //-----------------------------------------------------------------------------
 
 enumError Command_ARGTEST ( int argc, char ** argv );
+enumError Command_TESTCOLORS ( int argc, char ** argv );
 
 enumError Command_COLORS
 (
     int		level,		// only used, if mode==NULL
-				//  <= 0: raw colors
+				//  <  0: status message (ignore mode)
 				//  >= 1: include names
 				//  >= 2: include alt names
-				//  >= 3: include color names
+				//  >= 3: include color names incl bold
+				//  >= 4: include background color names
     uint	mode,		// output mode => see PrintColorSetHelper()
     uint	format		// output format => see PrintColorSetEx()
 );
@@ -2177,14 +2230,15 @@ enumError Command_COLORS
 ///////////////			OFF/AUTO/ON/FORCE		///////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-enum OffOn_t
+typedef enum OffOn_t
 {
     OFFON_ERROR	= -999,
     OFFON_OFF	=   -1,
     OFFON_AUTO	=    0,
     OFFON_ON	=    1,
     OFFON_FORCE	=    2,
-};
+}
+OffOn_t;
 
 extern const KeywordTab_t KeyTab_OFF_AUTO_ON[];
 
@@ -2454,7 +2508,7 @@ static inline char * ScanU64 ( u64 *res_num, ccp source, uint default_base )
 #endif
 
 //-----------------------------------------------------------------------------
-// strto*() replacements: Use Scan*() with better base support
+// strto*() replacements: Use Scan*() with better base support, NULL allowed as source
 
 long int str2l ( const char *nptr, char **endptr, int base );
 long long int str2ll ( const char *nptr, char **endptr, int base );
@@ -3580,6 +3634,20 @@ typedef struct MemMap_t
 void InitializeMemMap ( MemMap_t * mm );
 void ResetMemMap ( MemMap_t * mm );
 
+void CopyMemMap
+(
+    MemMap_t		* mm1,		// merged mem map, not NULL, cleared
+    const MemMap_t	* mm2,		// NULL or second mem map
+    bool		use_tie		// TRUE: use InsertMemMapTie()
+);
+
+void MergeMemMap
+(
+    MemMap_t		* mm1,		// merged mem map, not NULL, not cleared
+    const MemMap_t	* mm2,		// NULL or second mem map
+    bool		use_tie		// TRUE: use InsertMemMapTie()
+);
+
 MemMapItem_t * FindMemMap
 (
     // returns NULL or the pointer to the one! matched key (={off,size})
@@ -3647,6 +3715,50 @@ u64 FindFreeSpaceMemMap
 
 // Print out memory map
 void PrintMemMap ( MemMap_t * mm, FILE * f, int indent, ccp info_head );
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////		    Memory Map: Scan addresses		///////////////
+///////////////////////////////////////////////////////////////////////////////
+// [[ScanAddr_t]]
+
+typedef struct ScanAddr_t
+{
+    uint	stat;		// 0:invalid, 1:single address, 2:range
+    uint	addr;		// address
+    uint	size;		// size inf bytes
+
+} ScanAddr_t;
+
+//-----------------------------------------------------------------------------
+
+char * ScanAddress
+(
+    // returns first not scanned char of 'arg'
+
+    ScanAddr_t	* result,	// result, initialized by ScanAddress()
+    ccp		arg,		// format: ADDR | ADDR:END | ADDR#SIZE
+    uint	default_base	// base for numbers without '0x' prefix
+				//  0: C like with octal support
+				// 10: standard value for decimal numbers
+				// 16: standard value for hex numbers
+);
+
+//-----------------------------------------------------------------------------
+
+uint InsertAddressMemMap
+(
+    // returns the number of added addresses
+
+    MemMap_t	* mm,		// mem map pointer
+    bool	use_tie,	// TRUE: use InsertMemMapTie()
+    ccp		arg,		// comma separated list of addresses
+				// formats: ADDR | ADDR:END | ADDR#SIZE
+    uint	default_base	// base for numbers without '0x' prefix
+				//  0: C like with octal support
+				// 10: standard value for decimal numbers
+				// 16: standard value for hex numbers
+);
 
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -3987,7 +4099,7 @@ typedef struct GrowBuffer_t
 
     u8		*buf;		// NULL or data buffer
     uint	size;		// size of 'buf'
-    uint	grow_size;	// >0: auto grow grow buffer by multiple of this
+    uint	grow_size;	// >0: auto grow buffer by multiple of this
     uint	max_size;	// >0: max size for auto grow
 
     u8		*ptr;		// pointer to first valid byte

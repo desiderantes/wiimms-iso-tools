@@ -2670,7 +2670,7 @@ static void check_func
     uint		count,		// block usage count
     ccp			msg,		// clear text message
     uint		msg_len,	// strlen(msg)
-    void		* param		// user defined paramater
+    void		* param		// user defined parameter
 )
 {
     printf("%2u: %3d [%s] %d,%d %s\n",check_mode,slot,id6?id6:"-",block,count,msg);

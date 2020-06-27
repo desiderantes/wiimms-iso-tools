@@ -164,7 +164,7 @@ bool FixHeaderWDF
 (
     wdf_header_t	*wh,	    // dest header
     const wdf_header_t	*wh_src,    // src header, maybe NULL
-    bool		setup	    // true: setup all paramaters
+    bool		setup	    // true: setup all parameters
 );
 
 static inline uint GetHeaderSizeWDF ( uint vers )

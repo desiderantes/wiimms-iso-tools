@@ -881,7 +881,7 @@ void PrintXDumpParam
 
     indent = NormalizeIndent(indent);
     if (!colset)
-	colset = GetColorSet(false);
+	colset = GetColorSet0();
 
     fprintf(f,
 	"%*s%s" "Command:      %s%s%s\n"

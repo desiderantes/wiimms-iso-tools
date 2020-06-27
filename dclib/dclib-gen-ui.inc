@@ -122,11 +122,12 @@ static void print_info_opt
 	fprintf(cf,"static const InfoOption_t option_%s_%s_%s =\n",
 		ctrl->opt_prefix, cmd_name, info->c_name );
 
-    fprintf(cf,"    {\tOPT_%s, %s, %s, %s, %s, ",
+    fprintf(cf,"    {\tOPT_%s, %s, %s, %s, %s, %s, ",
 		info->c_name,
-		info->type & F_HIDDEN     ? "true" : "false",
-		info->type & F_DEPRECATED ? "true" : "false",
-		info->type & F_IGNORE     ? "true" : "false",
+		info->type & F_OPT_OPTPARAM	? "true" : "false",
+		info->type & F_HIDDEN		? "true" : "false",
+		info->type & F_DEPRECATED	? "true" : "false",
+		info->type & F_IGNORE		? "true" : "false",
 		first_info && info>first_info && info[-1].type&T_SEP_OPT ? "true" : "false" );
     ccp start = ( default_info ? default_info : info ) -> namelist;
     if ( *start && start[1] == '|' )
@@ -421,8 +422,8 @@ static void print_links ( control_t * ctrl )
 			"\toption_allowed_cmd_%s\n"	// opt_allowed
 			"    },\n\n"
 			,info_cmd->c_name
-			,info_cmd->type & F_HIDDEN ? "true" : "false"
-			,info_cmd->type & F_DEPRECATED ? "true" : "false"
+			,info_cmd->type & F_HIDDEN	 ? "true" : "false"
+			,info_cmd->type & F_DEPRECATED	 ? "true" : "false"
 			,separator ? "true" : "false"
 			,len1 ,name1
 			,name2
@@ -439,7 +440,7 @@ static void print_links ( control_t * ctrl )
     print_section(cf,sep1,"InfoCommand");
     fprintf(cf,"static const InfoCommand_t CommandInfo[CMD__N+1] =\n{\n");
     fputs(sum_beg,cf);
-    fprintf(cf,"    {0,0,0,0,0,0,0,0,0,00,}\n};\n");
+    fprintf(cf,"    {0,0,0,0,0,0,0,0,0,0,0,0}\n};\n");
 }
 
 //
@@ -448,6 +449,16 @@ static void print_links ( control_t * ctrl )
 ///////////////////////////////////////////////////////////////////////////////
 
 static char var_buf[10000];
+
+//-----------------------------------------------------------------------------
+
+static void CheckUsedName ( StringField_t *list, ccp name, uint len, ccp title )
+{
+    //printf("CHECK: |%.*s|\n",len,name);
+    ccp key = MEMDUP(name,len);
+    if (!InsertStringField(list,key,len))
+	fprintf(stderr,"!UI-WARNING: %s already defined: %.*s\n", title, len, name );
+}
 
 //-----------------------------------------------------------------------------
 
@@ -466,6 +477,8 @@ static enumError Generate ( control_t * ctrl )
     ctrl->opt_allow_grp = ctrl->opt_allow_cmd = 0;
 
     const info_t *info;
+    StringField_t used_name;
+    InitializeStringField(&used_name);
 
 
     //----- ui header
@@ -509,7 +522,7 @@ static enumError Generate ( control_t * ctrl )
     fprintf(cf,
 	    "static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =\n"
 	    "{\n"
-	    "    {0,0,0,0,0,0,0,0}, // OPT_NONE,\n"
+	    "    {0,0,0,0,0,0,0,0,0,0}, // OPT_NONE,\n"
 	    "\n"
 	    );
 
@@ -539,7 +552,7 @@ static enumError Generate ( control_t * ctrl )
 	ctrl->n_opt_specific = ctrl->n_opt;
 
 	fprintf(cf,
-		"    {0,0,0,0,0,0,0,0}, // OPT__N_SPECIFIC == %d\n\n"
+		"    {0,0,0,0,0,0,0,0,0,0}, // OPT__N_SPECIFIC == %d\n\n"
 		"    //----- global options -----\n\n",
 		ctrl->n_opt_specific );
 
@@ -559,7 +572,7 @@ static enumError Generate ( control_t * ctrl )
 	}
 
     fprintf(cf,
-	    "    {0,0,0,0,0,0,0,0} // OPT__N_TOTAL == %d\n\n"
+	    "    {0,0,0,0,0,0,0,0,0,0} // OPT__N_TOTAL == %d\n\n"
 	    "};\n"
 	    ,ctrl->n_opt );
 
@@ -776,6 +789,7 @@ static enumError Generate ( control_t * ctrl )
 		    while ( *ptr && *ptr != '|' )
 			ptr++;
 		    const int l1 = ptr - n1;
+		    CheckUsedName(&used_name,n1,l1,"Command");
 		    while ( *ptr == '|' )
 			ptr++;
 		    if (*ptr)
@@ -784,6 +798,7 @@ static enumError Generate ( control_t * ctrl )
 			while ( *ptr && *ptr != '|' )
 			    ptr++;
 			const int l2 = ptr - n2;
+			CheckUsedName(&used_name,n2,l2,"Command");
 
 			fprintf(cf,
 				"    { CMD_%s,%.*s\"%.*s\",%.*s\"%.*s\",%.*s0 },\n",
@@ -807,6 +822,8 @@ static enumError Generate ( control_t * ctrl )
 		"\n    { CMD__N,0,0,0 }\n"
 		"};\n"
 		);
+
+	ResetStringField(&used_name);
     }
 
     fprintf(hf,
@@ -823,16 +840,10 @@ static enumError Generate ( control_t * ctrl )
     for ( info = ctrl->info; info < ctrl->end; info++ )
 	if ( info->type & T_DEF_OPT && info->namelist[1] == '|' )
 	{
+	    CheckUsedName(&used_name,info->namelist,1,"Short option");
 	    *dest++ = info->namelist[0];
-	 #if 1
 	    if ( ( info->type & (F_OPT_OPTPARAM|F_OPT_PARAM) ) == F_OPT_PARAM )
 		*dest++ = ':';
-	 #else
-	    if ( info->type & F_OPT_OPTPARAM )
-		*dest++ = ':';
-	    if ( info->type & (F_OPT_OPTPARAM|F_OPT_PARAM) )
-		*dest++ = ':';
-	 #endif
 	}
     *dest = 0;
     fprintf(cf,"static const char OptionShort[] = \"%s\";\n\n",iobuf);
@@ -842,6 +853,7 @@ static enumError Generate ( control_t * ctrl )
     ccp opt_buf[UIOPT_INDEX_SIZE];
     memset(opt_buf,0,sizeof(opt_buf));
     int getopt_idx = UIOPT_LONG_BASE;
+    ResetStringField(&used_name);
 
     fprintf(cf,"static const struct option OptionLong[] =\n{\n");
     var_ptr = snprintfE(var_ptr,var_end,
@@ -882,11 +894,15 @@ static enumError Generate ( control_t * ctrl )
 		while ( *ptr && *ptr != '|' )
 		    ptr++;
 		const int len = ptr - start;
-		fprintf(cf,"\t%s{ \"%.*s\",%.*s%s },\n",
+		if (len)
+		{
+		    CheckUsedName(&used_name,start,len,"Long option");
+		    fprintf(cf,"\t%s{ \"%.*s\",%.*s%s },\n",
 			indent ? " " : "", len, start, (26-len-indent)/8, tabs, iobuf );
+		    indent = 1;
+		}
 		if (*ptr)
 		    ptr++;
-		indent = 1;
 	    }
 	}
     fprintf(cf,"\n\t{0,0,0,0}\n};\n");
@@ -1052,6 +1068,7 @@ static enumError Generate ( control_t * ctrl )
     print_section(cf,sep1,"END");
     print_section(hf,sep1,"END");
     fprintf(hf,"#endif // %s\n\n",guard);
+    ResetStringField(&used_name);
 
     return ERR_OK;
 };

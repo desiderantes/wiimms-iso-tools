@@ -76,7 +76,7 @@ typedef enumError (*FlushFunc)
 
 typedef struct IOData_t
 {
-    enumOFT	oft;			// open file mode
+    enumOFT	oft;			// open file type
 
     ReadFunc	read_func;		// read function
     DataBlockFunc data_block_func;	// get next data block

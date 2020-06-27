@@ -49,34 +49,34 @@
 
 static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 {
-    {0,0,0,0,0,0,0,0}, // OPT_NONE,
+    {0,0,0,0,0,0,0,0,0,0}, // OPT_NONE,
 
     //----- command specific options -----
 
-    {	OPT_CHUNK, false, false, false, false, 0, "chunk",
+    {	OPT_CHUNK, false, false, false, false, false, 0, "chunk",
 	0,
 	"Print table with chunk header too."
     },
 
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print (un)pack statistics, 1 line for each source. In dump mode:"
 	" Print table with chunk header too (same as --chunk)."
     },
 
-    {	OPT_MINUS1, false, false, false, false, '1', "minus-1",
+    {	OPT_MINUS1, false, false, false, false, false, '1', "minus-1",
 	0,
 	"If set the end address is the last address of a range. The standard"
 	" is to print the first address that is not part of the address of a"
 	" range."
     },
 
-    {	OPT_LIMIT, false, false, false, false, 0, "limit",
+    {	OPT_LIMIT, false, false, false, false, false, 0, "limit",
 	"num",
 	"Limit the output to NUM messages."
     },
 
-    {	OPT_FILE_LIMIT, false, false, false, false, 0, "file-limit",
+    {	OPT_FILE_LIMIT, false, false, false, false, false, 0, "file-limit",
 	"size",
 	"This option is only used if comparing discs on file level. If not set"
 	" or set to null, then all files will be compared. If set to a value"
@@ -85,7 +85,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" mode."
     },
 
-    {	OPT_BLOCK_SIZE, false, false, false, false, 0, "block-size",
+    {	OPT_BLOCK_SIZE, false, false, false, false, false, 0, "block-size",
 	"size",
 	"If a mismatch is found in raw or disc mode then the comparison is"
 	" continued with the next block. This option sets the block size. The"
@@ -93,26 +93,26 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" quiet mode."
     },
 
-    {	OPT_WDF, false, false, false, true, 'W', "wdf",
+    {	OPT_WDF, true, false, false, false, true, 'W', "wdf",
 	"[=param]",
 	"Force WDF output mode if packing and set the default suffix to"
 	" '.wdf'. This is the general default. --wdf=param is a short cut for"
 	" '--wdf --align-wdf=param'."
     },
 
-    {	OPT_WDF1, false, false, false, false, 0, "wdf1",
+    {	OPT_WDF1, true, false, false, false, false, 0, "wdf1",
 	"[=param]",
 	"Force WDF v1 output mode, if packing. Set the default suffix to"
 	" '.wdf'. --wdf1=param is a short cut for '--wdf1 --align-wdf=param'."
     },
 
-    {	OPT_WDF2, false, false, false, false, 0, "wdf2",
+    {	OPT_WDF2, true, false, false, false, false, 0, "wdf2",
 	"[=param]",
 	"Force WDF v2 output mode, if packing. Set the default suffix to"
 	" '.wdf'. --wdf2=param is a short cut for '--wdf2 --align-wdf=param'."
     },
 
-    {	OPT_WIA, false, false, false, false, 0, "wia",
+    {	OPT_WIA, true, false, false, false, false, 0, "wia",
 	"[=compr]",
 	"Force WIA output mode if packing and set the default suffix to"
 	" '.wia'. The optional parameter is a compression mode and --wia=mode"
@@ -121,7 +121,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" string 'wia' in any case."
     },
 
-    {	OPT_CISO, false, false, false, false, 'C', "ciso",
+    {	OPT_CISO, false, false, false, false, false, 'C', "ciso",
 	0,
 	"Force CISO output mode if packing and set the default suffix to"
 	" '.ciso'.\n"
@@ -129,7 +129,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" 'ciso' in any case."
     },
 
-    {	OPT_WBI, false, false, false, false, 0, "wbi",
+    {	OPT_WBI, false, false, false, false, false, 0, "wbi",
 	0,
 	"Force CISO output mode if packing and set the default suffix to"
 	" '.wbi'.\n"
@@ -137,23 +137,23 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" 'wbi' but not 'ciso' in any case."
     },
 
-    {	OPT_SUFFIX, false, false, false, false, 's', "suffix",
+    {	OPT_SUFFIX, false, false, false, false, false, 's', "suffix",
 	".suf",
 	"Use suffix '.suf' instead of '.wdf', '.wia', or '.ciso' for packed"
 	" files."
     },
 
-    {	OPT_DEST, false, false, false, true, 'd', "dest",
+    {	OPT_DEST, false, false, false, false, true, 'd', "dest",
 	"path",
 	"Define a destination path (directory/file)."
     },
 
-    {	OPT_DEST2, false, false, false, false, 'D', "DEST",
+    {	OPT_DEST2, false, false, false, false, false, 'D', "DEST",
 	"path",
 	"Like --dest, but create the directory path automatically."
     },
 
-    {	OPT_STDOUT, false, false, false, false, 'c', "stdout",
+    {	OPT_STDOUT, false, false, false, false, false, 'c', "stdout",
 	0,
 	"Write to standard output (stdout) and keep (don't delete) input"
 	" files.\n"
@@ -161,23 +161,23 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" input (stdin)."
     },
 
-    {	OPT_KEEP, false, false, false, false, 'k', "keep",
+    {	OPT_KEEP, false, false, false, false, false, 'k', "keep",
 	0,
 	"Keep (don't delete) input files during (un-)packing."
     },
 
-    {	OPT_OVERWRITE, false, false, false, false, 'o', "overwrite",
+    {	OPT_OVERWRITE, false, false, false, false, false, 'o', "overwrite",
 	0,
 	"Overwrite already existing files without warning."
     },
 
-    {	OPT_PRESERVE, false, false, false, false, 'p', "preserve",
+    {	OPT_PRESERVE, false, false, false, false, false, 'p', "preserve",
 	0,
 	"Preserve file times (atime+mtime) while copying an image. This option"
 	" is enabled by default if an unmodified disc image is copied."
     },
 
-    {	OPT_AUTO_SPLIT, false, false, false, false, 0, "auto-split",
+    {	OPT_AUTO_SPLIT, false, false, false, false, false, 0, "auto-split",
 	0,
 	"Enable auto split modus: Split only if necessary and determine the"
 	" split size automatically.\n"
@@ -185,18 +185,18 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" default."
     },
 
-    {	OPT_NO_SPLIT, false, false, false, false, 0, "no-split",
+    {	OPT_NO_SPLIT, false, false, false, false, false, 0, "no-split",
 	0,
 	"Disable output file splitting. This is the default, but in future"
 	" versions, the new option --auto-split becomes the default."
     },
 
-    {	OPT_SPLIT, false, false, false, false, 'z', "split",
+    {	OPT_SPLIT, false, false, false, false, false, 'z', "split",
 	0,
 	"Enable output file splitting. The default split size is 4 GB."
     },
 
-    {	OPT_SPLIT_SIZE, false, false, false, false, 'Z', "split-size",
+    {	OPT_SPLIT_SIZE, false, false, false, false, false, 'Z', "split-size",
 	"sz",
 	"Enable output file splitting and define a split size. The parameter"
 	" 'sz' is a floating point number followed by an optional unit factor"
@@ -204,7 +204,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" The default unit is 'G' (GiB)."
     },
 
-    {	OPT_PREALLOC, false, false, false, false, 0, "prealloc",
+    {	OPT_PREALLOC, true, false, false, false, false, 0, "prealloc",
 	"[=mode]",
 	"This option enables or disables the disc space preallocation. If"
 	" enabled the tools try to allocate disc space for the new files"
@@ -220,7 +220,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" is used for ISOs instead."
     },
 
-    {	OPT_CHUNK_MODE, false, false, false, false, 0, "chunk-mode",
+    {	OPT_CHUNK_MODE, false, false, false, false, false, 0, "chunk-mode",
 	"mode",
 	"Defines an operation mode for --chunk-size and --max-chunks. Allowed"
 	" keywords are 'ANY' to allow any values, '32K' to force chunk sizes"
@@ -231,7 +231,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  --chm is a shortcut for --chunk-mode."
     },
 
-    {	OPT_CHUNK_SIZE, false, false, false, false, 0, "chunk-size",
+    {	OPT_CHUNK_SIZE, false, false, false, false, false, 0, "chunk-size",
 	"sz",
 	"Define the minimal chunk size if creating a CISO or WIA file (for WIA"
 	" details see option --compression}). The default is to calculate the"
@@ -251,7 +251,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  --chs is a shortcut for --chunk-size."
     },
 
-    {	OPT_MAX_CHUNKS, false, false, false, false, 0, "max-chunks",
+    {	OPT_MAX_CHUNKS, false, false, false, false, false, 0, "max-chunks",
 	"n",
 	"Define the maximal number of chunks if creating a CISO file. The"
 	" default value is 8192 for '--chunk-mode ISO' and 32760 (maximal"
@@ -260,7 +260,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  --mch is a shortcut for --max-chunks."
     },
 
-    {	OPT_COMPRESSION, false, false, false, false, 0, "compression",
+    {	OPT_COMPRESSION, false, false, false, false, false, 0, "compression",
 	"mode",
 	"Select one compression method, level and chunk size for new WIA"
 	" files. The syntax for mode is: [method] [.level] [@factor]\n"
@@ -285,7 +285,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" prints an overview about all compression modes."
     },
 
-    {	OPT_MEM, false, false, false, false, 0, "mem",
+    {	OPT_MEM, false, false, false, false, false, 0, "mem",
 	"size",
 	"This option defines a memory usage limit for compressing files (in"
 	" MiB if no other unit is entered). When compressing a file with"
@@ -297,49 +297,49 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" to 80% of the total memory minus 50 MiB."
     },
 
-    {0,0,0,0,0,0,0,0}, // OPT__N_SPECIFIC == 30
+    {0,0,0,0,0,0,0,0,0,0}, // OPT__N_SPECIFIC == 30
 
     //----- global options -----
 
-    {	OPT_VERSION, false, false, false, false, 'V', "version",
+    {	OPT_VERSION, false, false, false, false, false, 'V', "version",
 	0,
 	"Stop parsing the command line, print a version info and exit."
     },
 
-    {	OPT_HELP, false, false, false, false, 'h', "help",
+    {	OPT_HELP, false, false, false, false, false, 'h', "help",
 	0,
 	"Stop parsing the command line, print a help message and exit."
     },
 
-    {	OPT_XHELP, false, false, false, false, 0, "xhelp",
+    {	OPT_XHELP, false, false, false, false, false, 0, "xhelp",
 	0,
 	"Stop parsing the command line and print a help message with all"
 	" commands included. Exit after printing."
     },
 
-    {	OPT_WIDTH, false, false, false, false, 0, "width",
+    {	OPT_WIDTH, false, false, false, false, false, 0, "width",
 	"width",
 	"Define the width (number of columns) for help and some other messages"
 	" and disable the automatic detection of the terminal width."
     },
 
-    {	OPT_QUIET, false, false, false, true, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, true, 'q', "quiet",
 	0,
 	"Be quiet and print only error messages."
     },
 
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"Be verbose -> print program name."
     },
 
-    {	OPT_LOGGING, false, false, false, false, 'L', "logging",
+    {	OPT_LOGGING, false, false, false, false, false, 'L', "logging",
 	0,
 	"This debug option enables the logging of internal memory maps. If set"
 	" twice second level memory maps are printed too."
     },
 
-    {	OPT_COLOR, false, false, true, false, 0, "color",
+    {	OPT_COLOR, true, false, false, true, false, 0, "color",
 	"[=modus]",
 	"Define the modus for colored text output. Allowed keywords are: OFF"
 	" or NO-COLORS to disable colors, AUTO (default) for automatic"
@@ -352,19 +352,19 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" implicitly as default."
     },
 
-    {	OPT_COLOR_256, false, false, true, false, 0, "256-colors",
+    {	OPT_COLOR_256, false, false, false, true, false, 0, "256-colors",
 	0,
 	"Short cut for --color=256-colors: Force colorized text with 256 color"
 	" support."
     },
 
-    {	OPT_NO_COLOR, false, false, true, false, 0, "no-colors",
+    {	OPT_NO_COLOR, false, false, false, true, false, 0, "no-colors",
 	0,
 	"Short cut for --color=off: Deactivate colorized text. This is the"
 	" default, if an output file is not a terminal."
     },
 
-    {	OPT_IO, false, false, false, false, 0, "io",
+    {	OPT_IO, false, false, false, false, false, 0, "io",
 	"flags",
 	"Setup the IO mode for experiments. The standard file IO is based on"
 	" open() function. The value '1' defines that WBFS IO is based on"
@@ -372,23 +372,20 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" value '4' for WIA files. You can combine the values by adding them."
     },
 
-    {	OPT_DSYNC, false, false, false, false, 0, "dsync",
-	0,
-	"The option enables the usage of flag O_DSYNC when opening a partition"
-	" at a hard drive. With activated flag, writing an image is some"
-	" percent slower, but the progress counters are exact again.\n"
-	"  It has only impact, if the compiler and the operation system"
+    {	OPT_DSYNC, true, false, false, false, false, 0, "dsync",
+	"[=mode]",
+	"This option enables the usage of flag O_DSYNC when opening a"
+	" partition at a hard drive for writing. With activated flag, writing"
+	" an image is some percent slower, but the progress counters are exact"
+	" again.\n"
+	"  Parameter MODE is optional. If set, it is one of OFF (disable), ON"
+	" (enable) or AUTO (default). With AUTO, DSYNC is enabled if the"
+	" progress counters are active.\n"
+	"  This option has only impact, if compiler and operation system"
 	" support the flag O_DSYNC. Linux does."
     },
 
-    {	OPT_DIRECT, true, false, false, false, 0, "direct",
-	0,
-	"This option allows the tools to use direct file io for some file"
-	" types. Therefore the flag O_DIRECT is set while opening files.\n"
-	">>> DIRECT IO IS EXPERIMENTAL! <<<"
-    },
-
-    {	OPT_ALIGN_WDF, false, false, false, false, 0, "align-wdf",
+    {	OPT_ALIGN_WDF, false, false, false, false, false, 0, "align-wdf",
 	"[align][,minhole]",
 	"Parameter align defines the aligning factor for new WDF images. It"
 	" must be a power of 2 and smaller or equal than 1 GiB. The default"
@@ -399,23 +396,23 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" minimize the total file size. minhole can't be smaller than align."
     },
 
-    {	OPT_TEST, false, false, false, true, 't', "test",
+    {	OPT_TEST, false, false, false, false, true, 't', "test",
 	0,
 	"Run in test mode, modify nothing.\n"
 	">>> USE THIS OPTION IF UNSURE! <<<"
     },
 
-    {	OPT_OLD, true, false, false, false, 0, "OLD",
+    {	OPT_OLD, false, true, false, false, false, 0, "OLD",
 	0,
 	"Use old implementation if available."
     },
 
-    {	OPT_NEW, true, false, false, false, 0, "NEW",
+    {	OPT_NEW, false, true, false, false, false, 0, "NEW",
 	0,
 	"Use new implementation if available."
     },
 
-    {0,0,0,0,0,0,0,0} // OPT__N_TOTAL == 47
+    {0,0,0,0,0,0,0,0,0,0} // OPT__N_TOTAL == 46
 
 };
 
@@ -425,13 +422,13 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 ///////////////////////////////////////////////////////////////////////////////
 
 static const InfoOption_t option_cmd_VERSION_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print in long format."
     };
 
 static const InfoOption_t option_cmd_CMP_QUIET =
-    {	OPT_QUIET, false, false, false, false, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, false, 'q', "quiet",
 	0,
 	"Be quiet and print only error messages and failure messages on"
 	" mismatch. The comparison is aborted at the first mismatch for each"
@@ -441,7 +438,7 @@ static const InfoOption_t option_cmd_CMP_QUIET =
     };
 
 static const InfoOption_t option_cmd_CMP_VERBOSE =
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"The default is to print only differ messages. If set success messages"
 	" and summaries are printed too. If set at least twice, a progress"
@@ -449,7 +446,7 @@ static const InfoOption_t option_cmd_CMP_VERBOSE =
     };
 
 static const InfoOption_t option_cmd_CMP_LIMIT =
-    {	OPT_LIMIT, false, false, false, false, 0, "limit",
+    {	OPT_LIMIT, false, false, false, false, false, 0, "limit",
 	"num",
 	"If not set, the comparison of the current file is aborted if a"
 	" mismatch is found. If set, the comparison is aborted after 'limit'"
@@ -458,7 +455,7 @@ static const InfoOption_t option_cmd_CMP_LIMIT =
     };
 
 static const InfoOption_t option_cmd_CMP_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set, a status line with the offset is printed for each found"
 	" mismatch. If set twice, an additional hex dump of the first bytes is"
@@ -468,7 +465,7 @@ static const InfoOption_t option_cmd_CMP_LONG =
     };
 
 static const InfoOption_t option_cmd_DUMP_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Same as --chunk"
     };
@@ -514,8 +511,7 @@ static const struct option OptionLong[] =
 	{ "no-colors",		0, 0, GO_NO_COLOR },
 	 { "nocolors",		0, 0, GO_NO_COLOR },
 	{ "io",			1, 0, GO_IO },
-	{ "dsync",		0, 0, GO_DSYNC },
-	{ "direct",		0, 0, GO_DIRECT },
+	{ "dsync",		2, 0, GO_DSYNC },
 	{ "chunk",		0, 0, GO_CHUNK },
 	{ "long",		0, 0, 'l' },
 	{ "minus-1",		0, 0, '1' },
@@ -621,27 +617,26 @@ static const OptionIndex_t OptionIndex[UIOPT_INDEX_SIZE] =
 	/* 0x84   */	OPT_NO_COLOR,
 	/* 0x85   */	OPT_IO,
 	/* 0x86   */	OPT_DSYNC,
-	/* 0x87   */	OPT_DIRECT,
-	/* 0x88   */	OPT_CHUNK,
-	/* 0x89   */	OPT_LIMIT,
-	/* 0x8a   */	OPT_FILE_LIMIT,
-	/* 0x8b   */	OPT_BLOCK_SIZE,
-	/* 0x8c   */	OPT_WDF1,
-	/* 0x8d   */	OPT_WDF2,
-	/* 0x8e   */	OPT_ALIGN_WDF,
-	/* 0x8f   */	OPT_WIA,
-	/* 0x90   */	OPT_WBI,
-	/* 0x91   */	OPT_AUTO_SPLIT,
-	/* 0x92   */	OPT_NO_SPLIT,
-	/* 0x93   */	OPT_PREALLOC,
-	/* 0x94   */	OPT_CHUNK_MODE,
-	/* 0x95   */	OPT_CHUNK_SIZE,
-	/* 0x96   */	OPT_MAX_CHUNKS,
-	/* 0x97   */	OPT_COMPRESSION,
-	/* 0x98   */	OPT_MEM,
-	/* 0x99   */	OPT_OLD,
-	/* 0x9a   */	OPT_NEW,
-	/* 0x9b   */	 0,0,0,0, 0,
+	/* 0x87   */	OPT_CHUNK,
+	/* 0x88   */	OPT_LIMIT,
+	/* 0x89   */	OPT_FILE_LIMIT,
+	/* 0x8a   */	OPT_BLOCK_SIZE,
+	/* 0x8b   */	OPT_WDF1,
+	/* 0x8c   */	OPT_WDF2,
+	/* 0x8d   */	OPT_ALIGN_WDF,
+	/* 0x8e   */	OPT_WIA,
+	/* 0x8f   */	OPT_WBI,
+	/* 0x90   */	OPT_AUTO_SPLIT,
+	/* 0x91   */	OPT_NO_SPLIT,
+	/* 0x92   */	OPT_PREALLOC,
+	/* 0x93   */	OPT_CHUNK_MODE,
+	/* 0x94   */	OPT_CHUNK_SIZE,
+	/* 0x95   */	OPT_MAX_CHUNKS,
+	/* 0x96   */	OPT_COMPRESSION,
+	/* 0x97   */	OPT_MEM,
+	/* 0x98   */	OPT_OLD,
+	/* 0x99   */	OPT_NEW,
+	/* 0x9a   */	 0,0,0,0, 0,0,
 	/* 0xa0   */	 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 	/* 0xb0   */	 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 	/* 0xc0   */	 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
@@ -971,7 +966,7 @@ static const InfoCommand_t CommandInfo[CMD__N+1] =
 	option_allowed_cmd_DUMP
     },
 
-    {0,0,0,0,0,0,0,0,0,00,}
+    {0,0,0,0,0,0,0,0,0,0,0,0}
 };
 
 //

@@ -356,7 +356,9 @@
 
   { T_OPT_G,	"PROGRESS",	"P|progress",
 		0,
-		"Print progress counter independent of verbose level." },
+		"Print progress counter."
+		" If --verbose is set at least twice, printing is enabled too."
+		" If progress is enabled, the default of --dsync is changed."  },
 
   { T_OPT_G,	"SCAN_PROGRESS","scan-progress|scanprogress",
 		0,
@@ -417,23 +419,19 @@
   { T_OPT_G,	"FORCE",	"f|force",
 		0, "Force operation." },
 
-  { T_OPT_G,	"DSYNC",	"dsync",
-		0,
-		"The option enables the usage of flag O_DSYNC"
-		" when opening a partition at a hard drive."
+  { T_OPT_GO,	"DSYNC",	"dsync",
+		"[=mode]",
+		"This option enables the usage of flag O_DSYNC"
+		" when opening a partition at a hard drive for writing."
 		" With activated flag, writing an image is some percent slower,"
 		" but the progress counters are exact again."
 		"\n "
-		" It has only impact, if the compiler and the operation system"
+		" Parameter MODE is optional."
+		" If set, it is one of OFF (disable), ON (enable) or AUTO (default)."
+		" With AUTO, DSYNC is enabled if the progress counters are active."
+		"\n "
+		" This option has only impact, if compiler and operation system"
 		" support the flag O_DSYNC. Linux does." },
-
-  { H_OPT_G,	"DIRECT",	"direct",
-		0,
-		"This option allows the tools to use direct file io for some file types."
-		" Therefore the flag @O_DIRECT@ is set while opening files."
-		"\n"
-		">>> DIRECT IO IS EXPERIMENTAL! <<<" },
-
 
   { T_SEP_OPT,	0,0,0,0 }, //----- separator -----
 

@@ -1373,7 +1373,7 @@ void PrintTranferStatistics
 	prefix = "";
 
     if (!colset)
-	colset = GetColorSet(false);
+	colset = GetColorSet0();
     ccp color1 = colset->status;
     ccp color0 = colset->reset;
 
@@ -3340,7 +3340,7 @@ void PrintStreamTableTCPHandler
     DASSERT(th);
     indent = NormalizeIndent(indent);
     if (!colset)
-	colset = GetColorSet(false);
+	colset = GetColorSet0();
 
     const u64 now_usec = GetTimeUSec(false);
 
@@ -3989,7 +3989,7 @@ void SaveCurrentStateSocket
     DASSERT(sock);
 
     char info[3*sizeof(sock->info)];
-    PrintEscapedString(info,sizeof(info),sock->info,-1,true,0,0);
+    PrintEscapedString(info,sizeof(info),sock->info,-1,CHMD__ALL,0,0);
 
     fprintf(f,
        "sock		= %d\n"
@@ -4014,7 +4014,7 @@ void SaveCurrentStateTCPStream
     DASSERT(ts);
 
     char info[1000];
-    PrintEscapedString(info,sizeof(info),ts->info,-1,true,0,0);
+    PrintEscapedString(info,sizeof(info),ts->info,-1,CHMD__ALL,0,0);
 
     fprintf(f,
        "sock		= %d\n"
@@ -4362,6 +4362,110 @@ void RestoreStateCommandTCP
     }
     else
 	RestoreStateTCPHandler(rs,user_table);
+}
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////			    Misc			///////////////
+///////////////////////////////////////////////////////////////////////////////
+
+bool fix_ether_head_vlan ( ether_head_vlan_t *head )
+{
+    DASSERT(head);
+    const u16 vlan_tag_type = ntohs(head->vlan_tag_type);
+    if ( vlan_tag_type == 0x8100 )
+    {
+	head->have_vlan	= true;
+	head->head_size	= 18;
+	return true;
+    }
+
+    head->ether_type	= head->vlan_tag_type;
+    head->have_vlan	= false;
+    head->head_size	= 14;
+    return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ntoh_ether_head_vlan ( ether_head_vlan_t *dest, const void * src )
+{
+    if (dest)
+    {
+	if (src)
+	    memcpy(dest,src,sizeof(*dest));
+
+	fix_ether_head_vlan(dest);
+	dest->vlan_tag_type	= ntohs(dest->vlan_tag_type);
+	dest->vlan_param	= ntohs(dest->vlan_param);
+	dest->ether_type	= ntohs(dest->ether_type);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ntoh_ether_head ( ether_head_t *dest, const void * src )
+{
+    if (dest)
+    {
+	if (src)
+	    memcpy(dest,src,sizeof(*dest));
+
+	dest->ether_type = ntohs(dest->ether_type);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ntoh_ip4_head ( ip4_head_t *dest, const void * src )
+{
+    if (dest)
+    {
+	if (src)
+	    memcpy(dest,src,sizeof(*dest));
+
+	dest->total_len	= ntohs(dest->total_len);
+	dest->id	= ntohs(dest->id);
+	dest->frag_off	= ntohs(dest->frag_off);
+	dest->checksum	= ntohs(dest->checksum);
+	dest->ip_src	= ntohl(dest->ip_src);
+	dest->ip_dest	= ntohl(dest->ip_dest);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ntoh_udp_head ( udp_head_t *dest, const void * src )
+{
+    if (dest)
+    {
+	const udp_head_t *usrc = src ? src : dest;
+
+	dest->port_src	= ntohs(usrc->port_src);
+	dest->port_dest	= ntohs(usrc->port_dest);
+	dest->data_len	= ntohs(usrc->data_len);
+	dest->checksum	= ntohs(usrc->checksum);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ntoh_tcp_head ( tcp_head_t *dest, const void * src )
+{
+    if (dest)
+    {
+	const tcp_head_t *usrc = src ? src : dest;
+
+	dest->port_src	= ntohs(usrc->port_src);
+	dest->port_dest	= ntohs(usrc->port_dest);
+	dest->seq_num	= ntohl(usrc->seq_num);
+	dest->acc_num	= ntohl(usrc->acc_num);
+	dest->data_off	= usrc->data_off;
+	dest->flags	= usrc->flags;
+	dest->window	= ntohs(usrc->window);
+	dest->checksum	= ntohs(usrc->checksum);
+	dest->urgent	= ntohs(usrc->urgent);
+    }
 }
 
 //

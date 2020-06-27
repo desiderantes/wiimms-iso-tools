@@ -225,7 +225,7 @@ ccp ProgramPathNoExt()
     if (!res)
     {
 	res = ProgramPath();
-	if (!res)
+	if (res)
 	{
 	    ccp slash = strrchr(res,'/');
 	    ccp ext = strrchr( slash ? slash + 1 : res, '.' );
@@ -1229,6 +1229,37 @@ char * SkipControlsE2 ( ccp src, ccp end, char ch1, char ch2 )
 	    src++;
 
     return (char*)src;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// return the number of chars until first EOL ( \0 | \r | \n );
+// pointer are NULL save
+
+uint LineLen ( ccp ptr )
+{
+    if (!ptr)
+	return 0;
+
+    ccp p = ptr;
+    while ( *p && *p != '\n' && *p != '\r' )
+	p++;
+    return p - ptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint LineLenE ( ccp ptr, ccp end )
+{
+    if (!ptr)
+	return 0;
+    if (!end)
+	return LineLen(ptr);
+
+    ccp p = ptr;
+    while ( p < end && *p && *p != '\n' && *p != '\r' )
+	p++;
+    return p - ptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2805,7 +2836,7 @@ uint DumpInfoContainer
 
     indent = NormalizeIndent(indent);
     if (!colset)
-	colset = GetColorSet(false);
+	colset = GetColorSet0();
 
     fprintf(f,"%*s%s%s%smod=%d, PL=%d, ",
 	indent,"",
@@ -2843,7 +2874,7 @@ uint DumpInfoContainerData
 
     indent = NormalizeIndent(indent);
     if (!colset)
-	colset = GetColorSet(false);
+	colset = GetColorSet0();
 
     fprintf(f,"%*s%s%s%sPC=%d, RC=%d, alloc=%d, size=%u=0x%x, addr=%p\n",
 	indent,"",
@@ -4294,7 +4325,7 @@ enumError Command_ARGTEST ( int argc, char ** argv )
 enumError Command_COLORS
 (
     int		level,		// only used, if mode==NULL
-				//  <= 0: raw colors
+				//  <  0: status message (ignore mode)
 				//  >= 1: include names
 				//  >= 2: include alt names
 				//  >= 3: include color names incl bold
@@ -4305,6 +4336,19 @@ enumError Command_COLORS
 {
     if (!colout)
 	SetupStdMsg();
+
+    if ( level < 0 )
+    {
+	printf("%s--color=%d [%s], colorize=%d [%s] / "
+		"stdout: tty=%d, mode=%d [%s], have-color=%d, n-colors=%u%s\n",
+		colout->status,
+		opt_colorize, GetColorModeName(opt_colorize,"?"),
+		colorize_stdout, GetColorModeName(colorize_stdout,"?"),
+		isatty(fileno(stdout)),
+		colout->col_mode, GetColorModeName(colout->col_mode,"?"),
+		colout->colorize, colout->n_colors, colout->reset );
+	return ERR_OK;
+    }
 
     if ( !mode && level > 0 )
 	switch (level)
@@ -4317,15 +4361,319 @@ enumError Command_COLORS
 
     if (!format)
     {
-	PrintTextModes( stdout, 4, !colout || colout->colorize );
-	PrintColorModes( stdout, 4, !colout || colout->colorize, GCM_ALT );
+	const ColorMode_t col_mode = colout ? colout->col_mode : COLMD_AUTO;
+	PrintTextModes( stdout, 4, col_mode );
+	PrintColorModes( stdout, 4, col_mode, GCM_ALT );
      #ifdef TEST
-	PrintColorModes( stdout, 4, !colout || colout->colorize ? 2 : 0, GCM_ALT|GCM_SHORT );
+	PrintColorModes( stdout, 4, col_mode, GCM_ALT|GCM_SHORT );
      #endif
     }
     if ( mode || format )
 	PrintColorSetEx(stdout,4,colout,mode,format);
     return ERR_OK;
+}
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////		global commands: TESTCOLORS		///////////////
+///////////////////////////////////////////////////////////////////////////////
+// [[color_info_t]]
+
+typedef struct color_info_t
+{
+    bool	valid;		// >0: data below is valid
+
+    u8		m_index;	// index of 0..255 for "\e[*m"
+
+    s8		m_red;		// -1:invalid, 0..5:  red value of 'm_index'
+    s8		m_green;	// -1:invalid, 0..5:  green value of 'm_index'
+    s8		m_blue;		// -1:invalid, 0..5:  blue value of 'm_index'
+    s8		m_gray;		// -1:invalid, 0..23: gray value of 'm_index'
+
+    u32		ref_color;	// reference colors, based on 'm_index';
+    u32		src_color;	// scanned color
+}
+color_info_t;
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool AssignColorInfo ( color_info_t *ci, u32 rgb )
+{
+    DASSERT(ci);
+    memset(ci,0,sizeof(*ci));
+
+    ci->src_color = rgb & 0xffffff;
+    ci->m_index   = ConvertColorRGBToM256(ci->src_color);
+    ci->ref_color = ConvertColorM256ToRGB(ci->m_index);
+
+    const uint r = ci->ref_color >> 16 & 0xff;
+    const uint g = ci->ref_color >>  8 & 0xff;
+    const uint b = ci->ref_color       & 0xff;
+
+    ci->m_red   = SingleColorToM6(r);
+    ci->m_green = SingleColorToM6(g);
+    ci->m_blue  = SingleColorToM6(b);
+
+    ci->m_gray  = ( r + g + b + 21 ) / 30;
+    if ( ci->m_gray > 23 )
+	ci->m_gray = 23;
+    else if ( ci->m_gray > 0 )
+	ci->m_gray--;
+
+    return ci->valid = 1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool ScanColorInfo ( color_info_t *ci, ccp arg )
+{
+    DASSERT(ci);
+    memset(ci,0,sizeof(*ci));
+    if ( arg && *arg )
+    {
+	arg = SkipControls(arg);
+
+	ulong num, r, g, b;
+	if ( *arg >= 'g' && *arg <= 'z' )
+	{
+	    const char mode = *arg;
+	    arg = SkipControls(arg+1);
+
+	    num = str2ul(arg,0,10);
+	    switch (mode)
+	    {
+		case 'm':
+		    return AssignColorInfo(ci,ConvertColorM256ToRGB(num));
+
+		case 'g':
+		    return AssignColorInfo(ci,ConvertColorM256ToRGB(232 + num % 24));
+
+		case 'c':
+		    r = num / 100 % 10;
+		    g = num / 10  % 10;
+		    b = num       % 10;
+		    goto rgb5;
+	    }
+	}
+	else
+	{
+	    char *end;
+	    num = str2ul(arg,&end,16);
+
+	    ci->valid = true;
+	    if ( end - arg <= 3 )
+	    {
+		r = num >> 8 & 15;
+		g = num >> 4 & 15;
+		b = num      & 15;
+
+		rgb5:
+		if ( r > 5 ) r = 5;
+		if ( g > 5 ) g = 5;
+		if ( b > 5 ) b = 5;
+		return AssignColorInfo(ci,ConvertColorM256ToRGB(16 + 36*r + 6*g + b));
+	    }
+	    return AssignColorInfo(ci,num);
+	}
+    }
+
+    return ci->valid;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+static void PrintColorInfo ( FILE *f, color_info_t *ci )
+{
+    DASSERT(f);
+    DASSERT(ci);
+
+    if (ci->valid)
+	fprintf(f," %06x -> %06x : %3u : %u,%u,%u : %2u"
+		" \e[48;5;16;38;5;%um test \e[0m"
+		" \e[48;5;244;38;5;%um test \e[0m"
+		" \e[48;5;231;38;5;%um test \e[0m "
+		" \e[38;5;16;48;5;%um test \e[0m"
+		" \e[38;5;244;48;5;%um test \e[0m"
+		" \e[38;5;231;48;5;%um test \e[0m\n",
+		ci->src_color, ci->ref_color,
+		ci->m_index, ci->m_red, ci->m_green, ci->m_blue, ci->m_gray,
+		ci->m_index, ci->m_index, ci->m_index,
+		ci->m_index, ci->m_index, ci->m_index );
+    else
+	fputs(" --\n",f);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+enumError Command_TESTCOLORS ( int argc, char ** argv )
+{
+ #if HAVE_PRINT
+    GetColorByName(colout,"blue");
+ #endif
+
+    printf("TEST COLORS: %u arguments:\n",argc);
+
+    bool sep = true;
+    int idx;
+    for ( idx = 0; idx < argc; idx++ )
+    {
+	ccp minus = strchr(argv[idx],'-');
+	if ( minus || sep )
+	{
+	    putchar('\n');
+	    sep = false;
+	    if ( strlen(argv[idx]) == 1 )
+		continue;
+	}
+
+	color_info_t ci1;
+	ScanColorInfo(&ci1,argv[idx]);
+	PrintColorInfo(stdout,&ci1);
+
+	if (!minus)
+	    continue;
+
+	color_info_t ci2;
+	ScanColorInfo(&ci2,minus+1);
+	if ( ci2.ref_color == ci1.ref_color )
+	    continue;
+
+	int r1 = ci1.ref_color >> 16 & 0xff;
+	int g1 = ci1.ref_color >>  8 & 0xff;
+	int b1 = ci1.ref_color       & 0xff;
+	int r2 = ci2.ref_color >> 16 & 0xff;
+	int g2 = ci2.ref_color >>  8 & 0xff;
+	int b2 = ci2.ref_color       & 0xff;
+
+	int n_steps = abs( r2 - r1 );
+	int diff = abs( g2 - g1 );
+	if ( n_steps < diff )
+	    n_steps = diff;
+	diff = abs( b2 - b1 );
+	if ( n_steps < diff )
+	    n_steps = diff;
+
+	u8 prev_m = ci1.m_index;
+	u32 prev_rgb = ci1.ref_color;
+	int i;
+	for ( i = 1; i <= n_steps; i++ )
+	{
+	    uint r = ( r2 - r1 ) * i / n_steps + r1;
+	    uint g = ( g2 - g1 ) * i / n_steps + g1;
+	    uint b = ( b2 - b1 ) * i / n_steps + b1;
+	    u8 new_m = ConvertColorRGB3ToM256(r,g,b);
+	    if ( prev_m != new_m )
+	    {
+		prev_m = new_m;
+		color_info_t ci3;
+		AssignColorInfo(&ci3,r<<16|g<<8|b);
+		if ( prev_rgb != ci3.ref_color )
+		{
+		    prev_rgb = ci3.src_color = ci3.ref_color;
+		    PrintColorInfo(stdout,&ci3);
+		}
+	    }
+	}
+	sep = true;
+    }
+    putchar('\n');
+    return ERR_OK;
+}
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////			color helpers			///////////////
+///////////////////////////////////////////////////////////////////////////////
+//
+// https://en.wikipedia.org/wiki/ANSI_escape_code
+// https://jonasjacek.github.io/colors/
+//
+// 0..15:  000000 800000 008000 808000  000080 800080 008080 c0c0c0
+//	   808080 ff0000 00ff00 ffff00  0000ff ff00ff 00ffff ffffff
+//		=> real colors varies on implementation
+//
+// 6x6x6: 0 95 135 175 215 255 == 00 5f 87 af d7 ff
+//
+// gray:  8 18 28 ... 238 == 08 12 1c 26 30 3a ... e4 ee f8
+//
+///////////////////////////////////////////////////////////////////////////////
+//
+//  mkw-ana testcol 000000-ffffff
+//  mkw-ana testcol 500-550 550-050 050-055 055-005 005-505 505-500
+//
+///////////////////////////////////////////////////////////////////////////////
+
+u32 ColorTab_M0_M15[16] =
+{
+	0x000000, 0x800000, 0x008000, 0x808000,
+	0x000080, 0x800080, 0x008080, 0xc0c0c0,
+	0x808080, 0xff0000, 0x00ff00, 0xffff00,
+	0x0000ff, 0xff00ff, 0x00ffff, 0xffffff,
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+u8 ConvertColorRGB3ToM256 ( u8 r, u8 g, u8 b )
+{
+    // 0..5
+    const uint r6 = SingleColorToM6(r);
+    const uint g6 = SingleColorToM6(g);
+    const uint b6 = SingleColorToM6(b);
+
+    u8	 m256	= 36*r6 + 6*g6 + b6 + 16;
+    uint delta	= abs ( ( r6 ? 55 + 40 * r6 : 0 ) - r  )
+		+ abs ( ( g6 ? 55 + 40 * g6 : 0 ) - g  )
+		+ abs ( ( b6 ? 55 + 40 * b6 : 0 ) - b  );
+
+    //printf("%02x>%u %02x>%u %02x>%u : m=%u delta=%d\n",r,r6,g,g6,b,b6,m256,delta);
+
+    uint m, gray, prev = 0x1000000;
+    for ( m = 232, gray = 8; m < 256; m++, gray += 10 )
+    {
+	const uint d = abs( gray - r ) + abs( gray - g ) + abs( gray - b );
+	if ( d > prev )
+	    break;
+	if ( d <= delta )
+	{
+	    delta = d;
+	    m256  = m;
+	}
+	prev = d;
+    }
+
+    return m256;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+u8 ConvertColorRGBToM256 ( u32 rgb )
+{
+    return ConvertColorRGB3ToM256( rgb >> 16, rgb >> 8, rgb );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+u32 ConvertColorM256ToRGB ( u8 m256 )
+{
+    if ( m256 < 16 )
+	return ColorTab_M0_M15[m256];
+
+    if ( m256 < 232 )
+    {
+	m256 -= 16;
+	const uint r =  m256 / 36;
+	const uint g =  m256 / 6 % 6;
+	const uint b =  m256 % 6;
+	
+	u32 col = 0;
+	if (r) col |= 0x370000 + 0x280000 * r;
+	if (g) col |= 0x003700 + 0x002800 * g;
+	if (b) col |= 0x000037 + 0x000028 * b;
+	return col;
+    }
+
+    m256 -= 232;
+    return 0x080808 + m256 * 0x0a0a0a;
 }
 
 //
@@ -5217,6 +5565,48 @@ void ResetMemMap ( MemMap_t * mm )
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void CopyMemMap
+(
+    MemMap_t		* mm1,		// merged mem map, not NULL, cleared
+    const MemMap_t	* mm2,		// NULL or second mem map
+    bool		use_tie		// TRUE: use InsertMemMapTie()
+)
+{   
+    DASSERT(mm1);
+    ResetMemMap(mm1);
+    MergeMemMap(mm1,mm2,use_tie);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void MergeMemMap
+(
+    MemMap_t		* mm1,		// merged mem map, not NULL, not cleared
+    const MemMap_t	* mm2,		// NULL or second mem map
+    bool		use_tie		// TRUE: use InsertMemMapTie()
+)
+{
+    DASSERT(mm1);
+    if (mm2)
+    {
+	uint i;
+	for ( i = 0; i < mm2->used; i++ )
+	{
+	    const MemMapItem_t *src = mm2->field[i];
+	    if (src)
+	    {
+		MemMapItem_t *it = use_tie
+			? InsertMemMapTie(mm1,src->off,src->size)
+			: InsertMemMap(mm1,src->off,src->size);
+		if (it)
+		    StringCopyS(it->info,sizeof(it->info),src->info);
+	    }
+	}
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 MemMapItem_t * FindMemMap ( MemMap_t * mm, off_t off, off_t size )
 {
     DASSERT(mm);
@@ -5518,6 +5908,99 @@ void PrintMemMap ( MemMap_t * mm, FILE * f, int indent, ccp info_head )
 	if ( max_end < end )
 	    max_end = end;
     }
+}
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////		    Memory Map: Scan addresses		///////////////
+///////////////////////////////////////////////////////////////////////////////
+
+char * ScanAddress
+(
+    // returns first not scanned char of 'arg'
+
+    ScanAddr_t	* result,	// result, initialized by ScanAddress()
+    ccp		arg,		// format: ADDR | ADDR:END | ADDR#SIZE
+    uint	default_base	// base for numbers without '0x' prefix
+				//  0: C like with octal support
+				// 10: standard value for decimal numbers
+				// 16: standard value for hex numbers
+)
+{
+    DASSERT(result);
+    memset(result,0,sizeof(*result));
+    if (!arg)
+	return 0;
+
+    ccp end = ScanUINT(&result->addr,arg,default_base);
+    if ( end == arg )
+	return (char*)arg;
+    arg = end;
+    while ( *arg == ' ' || *arg == '\t' )
+	arg++;
+    result->size = 1;
+    result->stat = 1;
+
+    if ( *arg == ':' )
+    {
+	uint addr2;
+	end = ScanUINT(&addr2,++arg,default_base);
+	if ( end == arg )
+	    return(char*) arg-1;
+
+	result->size = addr2 > result->addr ? addr2 - result->addr : 0;
+	result->stat = 2;
+    }
+    else if ( *arg == '#' )
+    {
+	end = ScanUINT(&result->size,++arg,default_base);
+	result->stat = 2;
+    }
+    
+    return (char*)end;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint InsertAddressMemMap
+(
+    // returns the number of added addresses
+
+    MemMap_t	* mm,		// mem map pointer
+    bool	use_tie,	// TRUE: use InsertMemMapTie()
+    ccp		arg,		// comma separated list of addresses
+				// formats: ADDR | ADDR:END | ADDR#SIZE
+    uint	default_base	// base for numbers without '0x' prefix
+				//  0: C like with octal support
+				// 10: standard value for decimal numbers
+				// 16: standard value for hex numbers
+)
+{
+    DASSERT(mm);
+    if (!arg)
+	return 0;
+
+    uint count = 0;
+    while (*arg)
+    {
+	ScanAddr_t addr;
+	arg = ScanAddress(&addr,arg,default_base);
+	if (addr.stat)
+	{
+	    if (use_tie)
+		InsertMemMapTie(mm,addr.addr,addr.size);
+	    else
+		InsertMemMap(mm,addr.addr,addr.size);
+	    count++;
+	}
+
+	while ( *arg && *arg != ' ' && *arg != '\t' && *arg != ',' )
+	    arg++;
+	while ( *arg == ' ' || *arg == '\t' || *arg == ',' )
+	    arg++;
+    }
+
+    return count;
 }
 
 //

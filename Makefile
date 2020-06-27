@@ -46,7 +46,7 @@ WFUSE_SHORT		= wfuse
 WFUSE_LONG		= Wiimms FUSE Tool
 
 VERSION_NUM		= 3.02a
-BETA_VERSION		= 2
+BETA_VERSION		= 0
 			# 0:off  -1:"beta"  >0:"beta#"
 
 URI_HOME		= https://wit.wiimm.de/
@@ -301,7 +301,9 @@ CFLAGS		+= -fomit-frame-pointer -fno-strict-aliasing -funroll-loops
 CFLAGS		+= -Wall -Wno-parentheses -Wno-unused-function
 #CFLAGS		+= -O3 -Isrc/libwbfs -Isrc/lzma -Isrc -I$(UI) -I. -Iwork
 CFLAGS		+= -O3 -Isrc/libwbfs -Isrc -I$(UI) -I. -Iwork
-ifeq ($(SYSTEM),mac)
+ifeq ($(SYSTEM),cygwin)
+  CFLAGS	+= -Wno-format-truncation
+else ifeq ($(SYSTEM),mac)
  CFLAGS		+= -I/usr/local/include
 endif
 CFLAGS		+= $(XFLAGS)
@@ -315,7 +317,7 @@ LDFLAGS		:= $(strip $(LDFLAGS))
 ifeq ($(HAVE_ZLIB),1)
  LIBS		+= -lz
 endif
-LIBS		+= -lm $(XLIBS)
+LIBS		+= -lm -lncurses $(XLIBS)
 
 DISTRIB_RM	= ./wit-v$(VERSION)-r
 DISTRIB_BASE	= wit-v$(VERSION)-r$(REVISION_NEXT)

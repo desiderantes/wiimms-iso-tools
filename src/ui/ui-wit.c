@@ -49,11 +49,11 @@
 
 static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 {
-    {0,0,0,0,0,0,0,0}, // OPT_NONE,
+    {0,0,0,0,0,0,0,0,0,0}, // OPT_NONE,
 
     //----- command specific options -----
 
-    {	OPT_SOURCE, false, false, false, false, 's', "source",
+    {	OPT_SOURCE, false, false, false, false, false, 's', "source",
 	"path",
 	"Use the entered file or directory as source.\n"
 	"  Directories are expanded to all containing files but hidden files"
@@ -63,13 +63,13 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" expansion."
     },
 
-    {	OPT_NO_EXPAND, false, false, false, false, 0, "no-expand",
+    {	OPT_NO_EXPAND, false, false, false, false, false, 0, "no-expand",
 	0,
 	"Do not expand directories to the containing files or images. This"
 	" option does not change the behavior of --recurse."
     },
 
-    {	OPT_RECURSE, false, false, false, false, 'r', "recurse",
+    {	OPT_RECURSE, false, false, false, false, false, 'r', "recurse",
 	"path",
 	" If path is not a directory, then it is used as a simple source file"
 	" like --source.\n"
@@ -80,20 +80,20 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" without notification."
     },
 
-    {	OPT_RDEPTH, false, false, false, false, 0, "rdepth",
+    {	OPT_RDEPTH, false, false, false, false, false, 0, "rdepth",
 	"depth",
 	"Set the maximum recurse depth for option --recurse. The default"
 	" search depth is 10."
     },
 
-    {	OPT_AUTO, false, false, false, false, 'a', "auto",
+    {	OPT_AUTO, false, false, false, false, false, 'a', "auto",
 	0,
 	"Search WBFS partitions using '/proc/partitions' or searching hard"
 	" disks in '/dev/' and use all readable as source. This works like"
 	" 'wwt --auto --all'."
     },
 
-    {	OPT_EXCLUDE, false, false, false, true, 'x', "exclude",
+    {	OPT_EXCLUDE, false, false, false, false, true, 'x', "exclude",
 	"id",
 	"A comma separated list with ID4 and ID6 values is expected. '.' is a"
 	" wildcard for exact 1 character and '+' is a wildcard for any number"
@@ -103,7 +103,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" exclude list. See --include-first for precedence issues."
     },
 
-    {	OPT_EXCLUDE_PATH, false, false, false, false, 'X', "exclude-path",
+    {	OPT_EXCLUDE_PATH, false, false, false, false, false, 'X', "exclude-path",
 	"file_or_dir",
 	"Scan the ID of the source and add it to the exclude list. If the"
 	" source is a directory then scan all images of the directory. Images"
@@ -112,7 +112,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" issues."
     },
 
-    {	OPT_INCLUDE, false, false, false, false, 'n', "include",
+    {	OPT_INCLUDE, false, false, false, false, false, 'n', "include",
 	"id",
 	"A comma separated list with ID values is expected. '.' is a wildcard"
 	" for exact 1 character and '+' is a wildcard for any number"
@@ -122,7 +122,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" the include list. See --include-first for precedence issues."
     },
 
-    {	OPT_INCLUDE_PATH, false, false, false, false, 'N', "include-path",
+    {	OPT_INCLUDE_PATH, false, false, false, false, false, 'N', "include-path",
 	"file_or_dir",
 	"Scan the ID of the source and add it to the include list. If the"
 	" source is a directory then scan all images of the directory. Only"
@@ -131,7 +131,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" precedence issues."
     },
 
-    {	OPT_INCLUDE_FIRST, false, false, false, false, 0, "include-first",
+    {	OPT_INCLUDE_FIRST, false, false, false, false, false, 0, "include-first",
 	0,
 	"The options --include, --include-path, --exclude and --exclude-path"
 	" decide which discs are included into the operation. If neither"
@@ -146,19 +146,19 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" specified by any exclude option and not by any include option."
     },
 
-    {	OPT_ONE_JOB, false, false, false, false, '1', "one-job",
+    {	OPT_ONE_JOB, false, false, false, false, false, '1', "one-job",
 	0,
 	"Execute only the first job and exit. This is a shortcut for"
 	" '--job-limit 1'."
     },
 
-    {	OPT_JOB_LIMIT, false, false, false, false, 0, "job-limit",
+    {	OPT_JOB_LIMIT, false, false, false, false, false, 0, "job-limit",
 	"num",
 	"Execute only the first 'num' jobs and exit. If done without errors"
 	" the exit status is OK (zero)."
     },
 
-    {	OPT_FAKE_SIGN, false, false, false, false, 0, "fake-sign",
+    {	OPT_FAKE_SIGN, false, false, false, false, false, 0, "fake-sign",
 	"ruleset",
 	"Add a certificate selection rule. All certificates that matches the"
 	" rule set will be fake signed.\n"
@@ -166,43 +166,43 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" about filters."
     },
 
-    {	OPT_IGNORE, false, false, false, false, 'i', "ignore",
+    {	OPT_IGNORE, false, false, false, false, false, 'i', "ignore",
 	0,
 	"Ignore non existing files/discs without warning. If set twice then"
 	" all non Wii and GameCube ISO images are ignored too."
     },
 
-    {	OPT_IGNORE_FST, false, false, false, false, 0, "ignore-fst",
+    {	OPT_IGNORE_FST, false, false, false, false, false, 0, "ignore-fst",
 	0,
 	"Disable composing and ignore FST directories as input."
     },
 
-    {	OPT_IGNORE_SETUP, false, false, false, false, 0, "ignore-setup",
+    {	OPT_IGNORE_SETUP, false, false, false, false, false, 0, "ignore-setup",
 	0,
 	"While composing ignore the file 'setup.txt', which defines some"
 	" partition parameters."
     },
 
-    {	OPT_LINKS, false, false, false, false, 0, "links",
+    {	OPT_LINKS, false, false, false, false, false, 0, "links",
 	0,
 	"Detect soft and hard linked source files while composing or"
 	" extracting discs and try to create hard links instead of independent"
 	" copies on the destination file system."
     },
 
-    {	OPT_USER_BIN, true, false, false, false, 0, "user-bin",
+    {	OPT_USER_BIN, false, true, false, false, false, 0, "user-bin",
 	0,
 	"Try to detect file 'sys/user.bin'. If available, use it like other"
 	" system files."
     },
 
-    {	OPT_NULL, false, false, false, false, '0', "null",
+    {	OPT_NULL, false, false, false, false, false, '0', "null",
 	0,
 	"Terminate each output line with a NUL (ASCII 0) character instead"
 	" with a line feed (LF, ASCII 10)."
     },
 
-    {	OPT_PSEL, false, false, false, true, 0, "psel",
+    {	OPT_PSEL, false, false, false, false, true, 0, "psel",
 	"list",
 	"This option set the scrubbing mode and defines, which disc partitions"
 	" are handled. It expects a comma separated list of keywords, numbers"
@@ -221,12 +221,12 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  See https://wit.wiimm.de/opt/psel for more details."
     },
 
-    {	OPT_RAW, false, false, false, false, 0, "raw",
+    {	OPT_RAW, false, false, false, false, false, 0, "raw",
 	0,
 	"Abbreviation of '--psel RAW'."
     },
 
-    {	OPT_PMODE, false, false, false, false, 0, "pmode",
+    {	OPT_PMODE, false, false, false, false, false, 0, "pmode",
 	"p-mode",
 	"This options set the prefix mode for listed or extracted files. One"
 	" of the following values is allowed: AUTO, NONE, POINT, ID, NAME,"
@@ -234,14 +234,14 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" https://wit.wiimm.de/opt/pmode for more details."
     },
 
-    {	OPT_FLAT, false, false, false, false, 0, "flat",
+    {	OPT_FLAT, false, false, false, false, false, 0, "flat",
 	0,
 	"While extracting a disc image strip all path names of the source file"
 	" and store all files in the same directory. This option sets the"
 	" default for --pmode to NONE."
     },
 
-    {	OPT_COPY_GC, false, false, false, false, 0, "copy-gc",
+    {	OPT_COPY_GC, false, false, false, false, false, 0, "copy-gc",
 	0,
 	"If extracting a GameCube disc image, don't extract the real files to"
 	" '/files/...'. Instead create a copy of the source image and store it"
@@ -249,26 +249,26 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" create a hard link and copy only if it fails."
     },
 
-    {	OPT_NO_LINK, false, false, false, false, 0, "no-link",
+    {	OPT_NO_LINK, false, false, false, false, false, 0, "no-link",
 	0,
 	"Don't try to create a hard link if copying the image forced by the"
 	" option --copy-gc."
     },
 
-    {	OPT_NEEK, false, false, false, false, 0, "neek",
+    {	OPT_NEEK, false, false, false, false, false, 0, "neek",
 	0,
 	"Abbreviation of '--psel data --pmode none --files :neek --copy-gc'."
 	" The old name --sneek is accepted too."
     },
 
-    {	OPT_ENC, false, false, false, false, 0, "enc",
+    {	OPT_ENC, false, false, false, false, false, 0, "enc",
 	"encoding",
 	"Define the encoding mode. The mode is one of NONE, HASHONLY, DECRYPT,"
 	" ENCRYPT, SIGN or AUTO. The case of the keywords is ignored. The"
 	" default mode is 'AUTO'."
     },
 
-    {	OPT_MODIFY, false, false, false, false, 0, "modify",
+    {	OPT_MODIFY, false, false, false, false, false, 0, "modify",
 	"list",
 	" This patching option defines the impact of the options --name and"
 	" --id. It expects a comma separated list of the following keywords"
@@ -279,7 +279,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" others."
     },
 
-    {	OPT_NAME, false, false, false, false, 0, "name",
+    {	OPT_NAME, false, false, false, false, false, 0, "name",
 	"name",
 	"This patching option changes the name (disc title) of the disc to the"
 	" given parameter. Up to 63 characters are expected. The disc header"
@@ -287,7 +287,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" objects."
     },
 
-    {	OPT_ID, false, false, false, false, 0, "id",
+    {	OPT_ID, false, false, false, false, false, 0, "id",
 	"id",
 	"This patching option changes the ID of the disc to the given"
 	" parameter. 1 to 6 characters are expected. Only defined characters"
@@ -298,7 +298,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"See https://wit.wiimm.de/opt/id for more details."
     },
 
-    {	OPT_DISC_ID, false, false, false, false, 0, "disc-id",
+    {	OPT_DISC_ID, false, false, false, false, false, 0, "disc-id",
 	"id",
 	"This patching option changes the ID of the disc header to the given"
 	" parameter. 1 to 6 characters are expected. Only defined characters"
@@ -308,7 +308,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"See https://wit.wiimm.de/opt/disc-id for more details."
     },
 
-    {	OPT_BOOT_ID, false, false, false, false, 0, "boot-id",
+    {	OPT_BOOT_ID, false, false, false, false, false, 0, "boot-id",
 	"id",
 	"This patching option changes the ID of boot.bin to the given"
 	" parameter. 1 to 6 characters are expected. Only defined characters"
@@ -318,7 +318,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"See https://wit.wiimm.de/opt/boot-id for more details."
     },
 
-    {	OPT_TICKET_ID, false, false, false, false, 0, "ticket-id",
+    {	OPT_TICKET_ID, false, false, false, false, false, 0, "ticket-id",
 	"id",
 	"This patching option changes the ID of ticket.bin to the given"
 	" parameter. 1 to 4 characters are expected. Only defined characters"
@@ -328,7 +328,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"See https://wit.wiimm.de/opt/ticket-id for more details."
     },
 
-    {	OPT_TMD_ID, false, false, false, false, 0, "tmd-id",
+    {	OPT_TMD_ID, false, false, false, false, false, 0, "tmd-id",
 	"id",
 	"This patching option changes the ID of tmd.bin to the given"
 	" parameter. 1 to 4 characters are expected. Only defined characters"
@@ -338,14 +338,14 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"See https://wit.wiimm.de/opt/tmd-id for more details."
     },
 
-    {	OPT_TT_ID, false, false, false, false, 0, "tt-id",
+    {	OPT_TT_ID, false, false, false, false, false, 0, "tt-id",
 	"id",
 	"This is a short cut for '--ticket id --tmd id'. If TICKET and TMD"
 	" differ, the game will freeze after loading. So it makes only sense"
 	" to change TICKET and TMD IDs together."
     },
 
-    {	OPT_WBFS_ID, false, false, false, false, 0, "wbfs-id",
+    {	OPT_WBFS_ID, false, false, false, false, false, 0, "wbfs-id",
 	"id",
 	"This patching option changes the ID of the WBFS header to the given"
 	" parameter if adding a file to a WBFS or if creating a WBFS file. 1"
@@ -357,34 +357,34 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"See https://wit.wiimm.de/opt/wbfs-id for more details."
     },
 
-    {	OPT_REGION, false, false, false, false, 0, "region",
+    {	OPT_REGION, false, false, false, false, false, 0, "region",
 	"region",
 	"This patching option defines the region of the disc. The region is"
 	" one of JAPAN, USA, EUROPE, KOREA, FILE or AUTO (default). The case"
 	" of the keywords is ignored. Unsigned numbers are also accepted."
     },
 
-    {	OPT_COMMON_KEY, false, false, false, false, 0, "common-key",
+    {	OPT_COMMON_KEY, false, false, false, false, false, 0, "common-key",
 	"index",
 	"This patching option defines the common key index as part of the"
 	" TICKET. Keywords 0, STANDARD, 1 and KOREAN are accepted."
     },
 
-    {	OPT_IOS, false, false, false, false, 0, "ios",
+    {	OPT_IOS, false, false, false, false, false, 0, "ios",
 	"ios",
 	"This patching option defines the system version (IOS to load) within"
 	" TMD. The format is 'HIGH:LOW' or 'HIGH-LOW' or 'LOW'. If only LOW is"
 	" set than HIGH is assumed as 1 (standard IOS)."
     },
 
-    {	OPT_HTTP, false, false, false, false, 0, "http",
+    {	OPT_HTTP, false, false, false, false, false, 0, "http",
 	0,
 	"This patching option replaces 'https' request to 'http' in the files"
 	" 'main.dol' and 'rel/StaticR.rel', if the files exist. It also"
 	" replaces the sub-domain 'naswii' to 'nas'."
     },
 
-    {	OPT_DOMAIN, false, false, false, false, 0, "domain",
+    {	OPT_DOMAIN, false, false, false, false, false, 0, "domain",
 	"domain",
 	"This patching option replaces the domain 'nintendowifi.net' by the"
 	" new domain. The length of the new domain must not be larger than the"
@@ -394,19 +394,19 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" for 'Super Smash Bros. Brawl'."
     },
 
-    {	OPT_WIIMMFI, false, false, false, false, 0, "wiimmfi",
+    {	OPT_WIIMMFI, false, false, false, false, false, 0, "wiimmfi",
 	0,
 	"Patch the images for Wiimmfi, the new custom server. It is a short"
 	" cut for '--http --domain wiimmfi.de'."
     },
 
-    {	OPT_TWIIMMFI, true, false, false, false, 0, "twiimmfi",
+    {	OPT_TWIIMMFI, false, true, false, false, false, 0, "twiimmfi",
 	0,
 	"Patch the images for the test custom server. It is a short cut for"
 	" '--http --domain test.wiimmfi.de'."
     },
 
-    {	OPT_RM_FILES, false, false, false, false, 0, "rm-files",
+    {	OPT_RM_FILES, false, false, false, false, false, 0, "rm-files",
 	"ruleset",
 	"This patching option defines filter rules to remove real files and"
 	" directories from the FST of the DATA partition. Fake signing of the"
@@ -416,7 +416,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" about file filters."
     },
 
-    {	OPT_ZERO_FILES, false, false, false, false, 0, "zero-files",
+    {	OPT_ZERO_FILES, false, false, false, false, false, 0, "zero-files",
 	"ruleset",
 	"This patching option defines filter rules to zero (set size to zero)"
 	" real files of the FST of the DATA partition. Fake signing of the TMD"
@@ -426,7 +426,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" about file filters."
     },
 
-    {	OPT_OVERLAY, false, false, false, false, 0, "overlay",
+    {	OPT_OVERLAY, false, false, false, false, false, 0, "overlay",
 	0,
 	"Most partitions have holes (unused areas) in the data section. If"
 	" combining multiple partitions into one disc it is possible to"
@@ -438,19 +438,19 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" algorithm to find the best one."
     },
 
-    {	OPT_REPL_FILE, true, false, false, false, 0, "repl-file",
+    {	OPT_REPL_FILE, false, true, false, false, false, 0, "repl-file",
 	"filedef",
 	"This relocation option ??? The processing order of file options is:"
 	" '--rm-files --zero-files --repl-file --add-file --ignore-files'."
     },
 
-    {	OPT_ADD_FILE, true, false, false, false, 0, "add-file",
+    {	OPT_ADD_FILE, false, true, false, false, false, 0, "add-file",
 	"filedef",
 	"This relocation option ??? The processing order of file options is:"
 	" '--rm-files --zero-files --repl-file --add-file --ignore-files'."
     },
 
-    {	OPT_IGNORE_FILES, false, false, false, false, 0, "ignore-files",
+    {	OPT_IGNORE_FILES, false, false, false, false, false, 0, "ignore-files",
 	"ruleset",
 	"This option defines filter rules to ignore real files of the FST of"
 	" the DATA partition. Fake signing is not necessary, but the partition"
@@ -462,43 +462,43 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" about file filters."
     },
 
-    {	OPT_TRIM, true, false, false, false, 0, "trim",
+    {	OPT_TRIM, false, true, false, false, false, 0, "trim",
 	"keylist",
 	"This relocation option ???"
     },
 
-    {	OPT_ALIGN, true, false, false, false, 0, "align",
+    {	OPT_ALIGN, false, true, false, false, false, 0, "align",
 	"size1[,size2][,size3]",
 	"???"
     },
 
-    {	OPT_ALIGN_PART, false, false, false, false, 0, "align-part",
+    {	OPT_ALIGN_PART, false, false, false, false, false, 0, "align-part",
 	"size",
 	"If creating or moving partitions the beginning of each partition is"
 	" set to an offset that is a multiple of the align size. Size must be"
 	" a power of 2 and at least 32 KiB (=default)."
     },
 
-    {	OPT_ALIGN_FILES, false, false, false, false, 0, "align-files",
+    {	OPT_ALIGN_FILES, false, false, false, false, false, 0, "align-files",
 	0,
 	"If creating a partition the file 'align-files.txt' is read. Files"
 	" listed with values >=0x8000 (Wii sector size) are automatically"
 	" aligned to 0x8000."
     },
 
-    {	OPT_DEST, false, false, false, false, 'd', "dest",
+    {	OPT_DEST, false, false, false, false, false, 'd', "dest",
 	"path",
 	"Define a destination path (directory or file). The destination path"
 	" is scanned for escape sequences (see option --esc) to allow generic"
 	" paths."
     },
 
-    {	OPT_DEST2, false, false, false, false, 'D', "DEST",
+    {	OPT_DEST2, false, false, false, false, false, 'D', "DEST",
 	"path",
 	"Like --dest, but create the directory path automatically."
     },
 
-    {	OPT_AUTO_SPLIT, false, false, false, false, 0, "auto-split",
+    {	OPT_AUTO_SPLIT, false, false, false, false, false, 0, "auto-split",
 	0,
 	"Enable auto split modus: Split only if necessary and determine the"
 	" split size automatically.\n"
@@ -506,18 +506,18 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" default."
     },
 
-    {	OPT_NO_SPLIT, false, false, false, false, 0, "no-split",
+    {	OPT_NO_SPLIT, false, false, false, false, false, 0, "no-split",
 	0,
 	"Disable output file splitting. This is the default, but in future"
 	" versions, the new option --auto-split becomes the default."
     },
 
-    {	OPT_SPLIT, false, false, false, false, 'z', "split",
+    {	OPT_SPLIT, false, false, false, false, false, 'z', "split",
 	0,
 	"Enable output file splitting. The default split size is 4 GB."
     },
 
-    {	OPT_SPLIT_SIZE, false, false, false, false, 'Z', "split-size",
+    {	OPT_SPLIT_SIZE, false, false, false, false, false, 'Z', "split-size",
 	"sz",
 	"Enable output file splitting and define a split size. The parameter"
 	" 'sz' is a floating point number followed by an optional unit factor"
@@ -525,12 +525,12 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" The default unit is 'G' (GiB)."
     },
 
-    {	OPT_DISC_SIZE, false, false, false, false, 0, "disc-size",
+    {	OPT_DISC_SIZE, false, false, false, false, false, 0, "disc-size",
 	"size",
 	"Define a minimal (virtual) ISO disc size."
     },
 
-    {	OPT_PREALLOC, false, false, false, false, 0, "prealloc",
+    {	OPT_PREALLOC, true, false, false, false, false, 0, "prealloc",
 	"[=mode]",
 	"This option enables or disables the disc space preallocation. If"
 	" enabled the tools try to allocate disc space for the new files"
@@ -546,13 +546,13 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" is used for ISOs instead."
     },
 
-    {	OPT_TRUNC, false, false, false, false, 0, "trunc",
+    {	OPT_TRUNC, false, false, false, false, false, 0, "trunc",
 	0,
 	"Truncate PLAIN ISO and WBFS images after creating or copying to the"
 	" minimal needed size with respect to the block size."
     },
 
-    {	OPT_CHUNK_MODE, false, false, false, false, 0, "chunk-mode",
+    {	OPT_CHUNK_MODE, false, false, false, false, false, 0, "chunk-mode",
 	"mode",
 	"Defines an operation mode for --chunk-size and --max-chunks. Allowed"
 	" keywords are 'ANY' to allow any values, '32K' to force chunk sizes"
@@ -563,7 +563,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  --chm is a shortcut for --chunk-mode."
     },
 
-    {	OPT_CHUNK_SIZE, false, false, false, false, 0, "chunk-size",
+    {	OPT_CHUNK_SIZE, false, false, false, false, false, 0, "chunk-size",
 	"sz",
 	"Define the minimal chunk size if creating a CISO or WIA file (for WIA"
 	" details see option --compression}). The default is to calculate the"
@@ -583,7 +583,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  --chs is a shortcut for --chunk-size."
     },
 
-    {	OPT_MAX_CHUNKS, false, false, false, false, 0, "max-chunks",
+    {	OPT_MAX_CHUNKS, false, false, false, false, false, 0, "max-chunks",
 	"n",
 	"Define the maximal number of chunks if creating a CISO file. The"
 	" default value is 8192 for '--chunk-mode ISO' and 32760 (maximal"
@@ -592,7 +592,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  --mch is a shortcut for --max-chunks."
     },
 
-    {	OPT_BLOCK_SIZE, false, false, false, false, 0, "block-size",
+    {	OPT_BLOCK_SIZE, false, false, false, false, false, 0, "block-size",
 	"size",
 	"If a mismatch is found in raw or disc mode then the comparison is"
 	" continued with the next block. This option sets the block size. The"
@@ -600,7 +600,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" quiet mode."
     },
 
-    {	OPT_COMPRESSION, false, false, false, false, 0, "compression",
+    {	OPT_COMPRESSION, false, false, false, false, false, 0, "compression",
 	"mode",
 	"Select one compression method, level and chunk size for new WIA"
 	" files. The syntax for mode is: [method] [.level] [@factor]\n"
@@ -625,7 +625,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" prints an overview about all compression modes."
     },
 
-    {	OPT_MEM, false, false, false, false, 0, "mem",
+    {	OPT_MEM, false, false, false, false, false, 0, "mem",
 	"size",
 	"This option defines a memory usage limit for compressing files (in"
 	" MiB if no other unit is entered). When compressing a file with"
@@ -637,35 +637,35 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" to 80% of the total memory minus 50 MiB."
     },
 
-    {	OPT_PRESERVE, false, false, false, false, 'p', "preserve",
+    {	OPT_PRESERVE, false, false, false, false, false, 'p', "preserve",
 	0,
 	"Preserve file times (atime+mtime) while copying an image. This option"
 	" is enabled by default if an unmodified disc image is copied."
     },
 
-    {	OPT_UPDATE, false, false, false, false, 'u', "update",
+    {	OPT_UPDATE, false, false, false, false, false, 'u', "update",
 	0,
 	"Copy only files that do not exist. Already existing files are ignored"
 	" without warning."
     },
 
-    {	OPT_OVERWRITE, false, false, false, false, 'o', "overwrite",
+    {	OPT_OVERWRITE, false, false, false, false, false, 'o', "overwrite",
 	0,
 	"Overwrite already existing files without warning."
     },
 
-    {	OPT_DIFF, false, false, false, false, 0, "diff",
+    {	OPT_DIFF, false, false, false, false, false, 0, "diff",
 	0,
 	"Diff source and destination after copying."
     },
 
-    {	OPT_REMOVE, false, false, false, false, 'R', "remove",
+    {	OPT_REMOVE, false, false, false, false, false, 'R', "remove",
 	0,
 	"Remove source files/discs if operation is successful. If the source"
 	" is an extracted file systems (FST) it isn't removed."
     },
 
-    {	OPT_WDF, false, false, false, true, 'W', "wdf",
+    {	OPT_WDF, true, false, false, false, true, 'W', "wdf",
 	"[=param]",
 	"Set the image output file type to WDF (Wii Disc Format). The output"
 	" format is either WDFv1 or WDFv2. It depends of the input file format"
@@ -673,51 +673,51 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" --align-wdf=param'."
     },
 
-    {	OPT_WDF1, false, false, false, false, 0, "wdf1",
+    {	OPT_WDF1, true, false, false, false, false, 0, "wdf1",
 	"[=param]",
 	"Set image output file type to WDF and force version 1. --wdf1=param"
 	" is a short cut for '--wdf1 --align-wdf=param'."
     },
 
-    {	OPT_WDF2, false, false, false, false, 0, "wdf2",
+    {	OPT_WDF2, true, false, false, false, false, 0, "wdf2",
 	"[=param]",
 	"Set image output file type to WDF and force version 2. --wdf2=param"
 	" is a short cut for '--wdf2 --align-wdf=param'."
     },
 
-    {	OPT_ISO, false, false, false, false, 'I', "iso",
+    {	OPT_ISO, false, false, false, false, false, 'I', "iso",
 	0,
 	"Set image output file type to PLAIN ISO."
     },
 
-    {	OPT_CISO, false, false, false, false, 'C', "ciso",
+    {	OPT_CISO, false, false, false, false, false, 'C', "ciso",
 	0,
 	"Set image output file type to CISO (Compact ISO, same as WBI)."
     },
 
-    {	OPT_WBFS, false, false, false, false, 'B', "wbfs",
+    {	OPT_WBFS, false, false, false, false, false, 'B', "wbfs",
 	0,
 	"Set image output file type to WBFS (Wii Backup File System, default)."
     },
 
-    {	OPT_WIA, false, false, false, false, 0, "wia",
+    {	OPT_WIA, true, false, false, false, false, 0, "wia",
 	"[=compr]",
 	"Set image output file type to WIA (Wii ISO Archive). The optional"
 	" parameter is a compression mode and --wia=mode is a shortcut for"
 	" '--wia --compression mode'."
     },
 
-    {	OPT_GCZ, false, false, false, false, 'G', "gcz",
+    {	OPT_GCZ, false, false, false, false, false, 'G', "gcz",
 	0,
 	"Set image output file type to GCZ (Dolphins GameCube Zip)."
     },
 
-    {	OPT_FST, false, false, false, false, 0, "fst",
+    {	OPT_FST, false, false, false, false, false, 0, "fst",
 	0,
 	"Set image output mode to 'file system' (extracted ISO)."
     },
 
-    {	OPT_FILES, false, false, false, false, 'F', "files",
+    {	OPT_FILES, false, false, false, false, false, 'F', "files",
 	"ruleset",
 	"Append file select rules. This option can be used multiple times to"
 	" extend the rule list. Rules beginning with a '+' or a '-' are allow"
@@ -727,31 +727,31 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" about file filters."
     },
 
-    {	OPT_ITIME, false, false, false, true, 0, "itime",
+    {	OPT_ITIME, false, false, false, false, true, 0, "itime",
 	0,
 	"Select 'itime' (insertion time) for printing. --itime is an"
 	" abbreviation of '--time i'."
     },
 
-    {	OPT_MTIME, false, false, false, false, 0, "mtime",
+    {	OPT_MTIME, false, false, false, false, false, 0, "mtime",
 	0,
 	"Select 'mtime' (last modification time) for printing. --mtime is an"
 	" abbreviation of '--time m'."
     },
 
-    {	OPT_CTIME, false, false, false, false, 0, "ctime",
+    {	OPT_CTIME, false, false, false, false, false, 0, "ctime",
 	0,
 	"Select 'ctime' (last status change time) for printing. --ctime is an"
 	" abbreviation of '--time c'."
     },
 
-    {	OPT_ATIME, false, false, false, false, 0, "atime",
+    {	OPT_ATIME, false, false, false, false, false, 0, "atime",
 	0,
 	"Select 'atime' (last access time) for printing. --atime is an"
 	" abbreviation of '--time a'."
     },
 
-    {	OPT_TIME, false, false, false, false, 0, "time",
+    {	OPT_TIME, false, false, false, false, false, 0, "time",
 	"list",
 	"Set time printing and sorting mode. The parameter is a comma"
 	" separated list of the following keywords, case is ignored: RESET,"
@@ -760,33 +760,33 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" CSEC, ASEC."
     },
 
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print in long format. Multiple usage possible."
     },
 
-    {	OPT_BRIEF, false, false, false, false, 'b', "brief",
+    {	OPT_BRIEF, false, false, false, false, false, 'b', "brief",
 	0,
 	"Print only a summary."
     },
 
-    {	OPT_NUMERIC, false, false, false, false, 0, "numeric",
+    {	OPT_NUMERIC, false, false, false, false, false, 0, "numeric",
 	0,
 	"Force numeric output instead of printing names."
     },
 
-    {	OPT_TECHNICAL, false, false, false, false, 0, "technical",
+    {	OPT_TECHNICAL, false, false, false, false, false, 0, "technical",
 	0,
 	"Force a technical output instead of user friendly text. --tech is a"
 	" short cut for --technical."
     },
 
-    {	OPT_REALPATH, false, false, false, false, 0, "real-path",
+    {	OPT_REALPATH, false, false, false, false, false, 0, "real-path",
 	0,
 	"Print real path instead of entered path."
     },
 
-    {	OPT_SHOW, false, false, false, false, '+', "show",
+    {	OPT_SHOW, false, false, false, false, false, '+', "show",
 	"list",
 	"This option allows fine control over the things that are to be"
 	" printed. The parameter is a comma separated list of the following"
@@ -806,7 +806,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" output elements."
     },
 
-    {	OPT_UNIT, false, false, false, false, 0, "unit",
+    {	OPT_UNIT, false, false, false, false, false, 0, "unit",
 	"list",
 	"This option set the output unit for sizes. The parameter is a comma"
 	" separated list of the following keywords, case is ignored: 1000=10,"
@@ -823,29 +823,29 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	"  DEFAULT allows the command to select a adequate size unit."
     },
 
-    {	OPT_UNIQUE, false, false, false, false, 'U', "unique",
+    {	OPT_UNIQUE, false, false, false, false, false, 'U', "unique",
 	0,
 	"Eliminate multiple entries with same ID6."
     },
 
-    {	OPT_NO_HEADER, false, false, false, false, 'H', "no-header",
+    {	OPT_NO_HEADER, false, false, false, false, false, 'H', "no-header",
 	0,
 	"Suppress printing of header and footer."
     },
 
-    {	OPT_OLD_STYLE, false, false, false, false, 0, "old-style",
+    {	OPT_OLD_STYLE, false, false, false, false, false, 0, "old-style",
 	0,
 	"Print in old style. This is important for tools and GUIs that are"
 	" scanning the output."
     },
 
-    {	OPT_SECTIONS, false, false, false, false, 0, "sections",
+    {	OPT_SECTIONS, false, false, false, false, false, 0, "sections",
 	0,
 	"Print in machine readable sections and parameter lines. Read"
 	" https://wit.wiimm.de/opt/sections for more details."
     },
 
-    {	OPT_SORT, false, false, false, false, 'S', "sort",
+    {	OPT_SORT, false, false, false, false, false, 'S', "sort",
 	"list",
 	"Define the sort mode for listings. The parameter is a comma separated"
 	" list of the following keywords: NONE, NAME, TITLE, PATH, NINTENDO,"
@@ -853,12 +853,12 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" CTIME, ATIME, TIME = DATE, DEFAULT, ASCENDING, DESCENDING = REVERSE."
     },
 
-    {	OPT_LIMIT, false, false, false, false, 0, "limit",
+    {	OPT_LIMIT, false, false, false, false, false, 0, "limit",
 	"num",
 	"Limit the output to NUM messages."
     },
 
-    {	OPT_FILE_LIMIT, false, false, false, false, 0, "file-limit",
+    {	OPT_FILE_LIMIT, false, false, false, false, false, 0, "file-limit",
 	"size",
 	"This option is only used if comparing discs on file level. If not set"
 	" or set to null, then all files will be compared. If set to a value"
@@ -867,43 +867,43 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" mode."
     },
 
-    {	OPT_PATCH_FILE, true, false, false, false, 0, "patch-file",
+    {	OPT_PATCH_FILE, false, true, false, false, false, 0, "patch-file",
 	"file",
 	"Define a patch file."
     },
 
-    {0,0,0,0,0,0,0,0}, // OPT__N_SPECIFIC == 104
+    {0,0,0,0,0,0,0,0,0,0}, // OPT__N_SPECIFIC == 104
 
     //----- global options -----
 
-    {	OPT_VERSION, false, false, false, false, 'V', "version",
+    {	OPT_VERSION, false, false, false, false, false, 'V', "version",
 	0,
 	"Stop parsing the command line, print a version info and exit."
     },
 
-    {	OPT_HELP, false, false, false, false, 'h', "help",
+    {	OPT_HELP, false, false, false, false, false, 'h', "help",
 	0,
 	"Stop parsing the command line, print a help message and exit."
     },
 
-    {	OPT_XHELP, false, false, false, false, 0, "xhelp",
+    {	OPT_XHELP, false, false, false, false, false, 0, "xhelp",
 	0,
 	"Stop parsing the command line and print a help message with all"
 	" commands included. Exit after printing."
     },
 
-    {	OPT_WIDTH, false, false, false, false, 0, "width",
+    {	OPT_WIDTH, false, false, false, false, false, 0, "width",
 	"width",
 	"Define the width (number of columns) for help and some other messages"
 	" and disable the automatic detection of the terminal width."
     },
 
-    {	OPT_QUIET, false, false, false, false, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, false, 'q', "quiet",
 	0,
 	"Be quiet and print only error messages."
     },
 
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"Be verbose and print more progress information. Multiple usage is"
 	" possible: Progress counter is enabled if set at least two times."
@@ -911,30 +911,32 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" of the other verbose levels are command dependent."
     },
 
-    {	OPT_PROGRESS, false, false, false, false, 'P', "progress",
+    {	OPT_PROGRESS, false, false, false, false, false, 'P', "progress",
 	0,
-	"Print progress counter independent of verbose level."
+	"Print progress counter. If --verbose is set at least twice, printing"
+	" is enabled too. If progress is enabled, the default of --dsync is"
+	" changed."
     },
 
-    {	OPT_SCAN_PROGRESS, false, false, false, false, 0, "scan-progress",
+    {	OPT_SCAN_PROGRESS, false, false, false, false, false, 0, "scan-progress",
 	0,
 	"Print a message for each found image while scanning the file system."
     },
 
-    {	OPT_LOGGING, false, false, false, false, 'L', "logging",
+    {	OPT_LOGGING, false, false, false, false, false, 'L', "logging",
 	0,
 	"This debug option enables the logging of internal memory maps. If set"
 	" twice second level memory maps are printed too."
     },
 
-    {	OPT_ESC, false, false, false, false, 'E', "esc",
+    {	OPT_ESC, false, false, false, false, false, 'E', "esc",
 	"char",
 	"Define an alternative escape character for destination files. The"
 	" default is '%'. For Windows (CYGWIN) it is a good choice to set"
 	" '-E$' to avoid conflicts with command shell variables."
     },
 
-    {	OPT_COLOR, false, false, true, false, 0, "color",
+    {	OPT_COLOR, true, false, false, true, false, 0, "color",
 	"[=modus]",
 	"Define the modus for colored text output. Allowed keywords are: OFF"
 	" or NO-COLORS to disable colors, AUTO (default) for automatic"
@@ -947,19 +949,19 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" implicitly as default."
     },
 
-    {	OPT_COLOR_256, false, false, true, false, 0, "256-colors",
+    {	OPT_COLOR_256, false, false, false, true, false, 0, "256-colors",
 	0,
 	"Short cut for --color=256-colors: Force colorized text with 256 color"
 	" support."
     },
 
-    {	OPT_NO_COLOR, false, false, true, false, 0, "no-colors",
+    {	OPT_NO_COLOR, false, false, false, true, false, 0, "no-colors",
 	0,
 	"Short cut for --color=off: Deactivate colorized text. This is the"
 	" default, if an output file is not a terminal."
     },
 
-    {	OPT_IO, false, false, false, false, 0, "io",
+    {	OPT_IO, false, false, false, false, false, 0, "io",
 	"flags",
 	"Setup the IO mode for experiments. The standard file IO is based on"
 	" open() function. The value '1' defines that WBFS IO is based on"
@@ -967,49 +969,46 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" value '4' for WIA files. You can combine the values by adding them."
     },
 
-    {	OPT_FORCE, false, false, false, false, 'f', "force",
+    {	OPT_FORCE, false, false, false, false, false, 'f', "force",
 	0,
 	"Force operation."
     },
 
-    {	OPT_DSYNC, false, false, false, false, 0, "dsync",
-	0,
-	"The option enables the usage of flag O_DSYNC when opening a partition"
-	" at a hard drive. With activated flag, writing an image is some"
-	" percent slower, but the progress counters are exact again.\n"
-	"  It has only impact, if the compiler and the operation system"
+    {	OPT_DSYNC, true, false, false, false, false, 0, "dsync",
+	"[=mode]",
+	"This option enables the usage of flag O_DSYNC when opening a"
+	" partition at a hard drive for writing. With activated flag, writing"
+	" an image is some percent slower, but the progress counters are exact"
+	" again.\n"
+	"  Parameter MODE is optional. If set, it is one of OFF (disable), ON"
+	" (enable) or AUTO (default). With AUTO, DSYNC is enabled if the"
+	" progress counters are active.\n"
+	"  This option has only impact, if compiler and operation system"
 	" support the flag O_DSYNC. Linux does."
     },
 
-    {	OPT_DIRECT, true, false, false, false, 0, "direct",
-	0,
-	"This option allows the tools to use direct file io for some file"
-	" types. Therefore the flag O_DIRECT is set while opening files.\n"
-	">>> DIRECT IO IS EXPERIMENTAL! <<<"
-    },
-
-    {	OPT_TITLES, false, false, false, true, 'T', "titles",
+    {	OPT_TITLES, false, false, false, false, true, 'T', "titles",
 	"file",
 	"Read file for disc titles. -T/ disables automatic search for title"
 	" files."
     },
 
-    {	OPT_UTF_8, false, false, false, false, 0, "utf-8",
+    {	OPT_UTF_8, false, false, false, false, false, 0, "utf-8",
 	0,
 	"Enables UTF-8 support for filenames (default)."
     },
 
-    {	OPT_NO_UTF_8, false, false, false, false, 0, "no-utf-8",
+    {	OPT_NO_UTF_8, false, false, false, false, false, 0, "no-utf-8",
 	0,
 	"Disables UTF-8 support for filenames."
     },
 
-    {	OPT_LANG, false, false, false, false, 0, "lang",
+    {	OPT_LANG, false, false, false, false, false, 0, "lang",
 	"lang",
 	"Define the language for titles."
     },
 
-    {	OPT_CERT, false, false, false, false, 0, "cert",
+    {	OPT_CERT, false, false, false, false, false, 0, "cert",
 	"file",
 	"Scan a file for certificates and add them to the internal certificate"
 	" database. Valid sources are CERT, TICKET, TMD and ISO files. All"
@@ -1017,28 +1016,28 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" certificates are ignored without notification."
     },
 
-    {	OPT_TEST, false, false, false, true, 't', "test",
+    {	OPT_TEST, false, false, false, false, true, 't', "test",
 	0,
 	"Run in test mode, modify nothing.\n"
 	">>> USE THIS OPTION IF UNSURE! <<<"
     },
 
-    {	OPT_OLD, true, false, false, false, 0, "OLD",
+    {	OPT_OLD, false, true, false, false, false, 0, "OLD",
 	0,
 	"Use old implementation if available."
     },
 
-    {	OPT_NEW, true, false, false, false, 0, "NEW",
+    {	OPT_NEW, false, true, false, false, false, 0, "NEW",
 	0,
 	"Use new implementation if available."
     },
 
-    {	OPT_HOOK, true, false, false, false, 0, "hook",
+    {	OPT_HOOK, false, true, false, false, false, 0, "hook",
 	0,
 	"Force relocation hook while reading iso images."
     },
 
-    {	OPT_ALIGN_WDF, false, false, false, false, 0, "align-wdf",
+    {	OPT_ALIGN_WDF, false, false, false, false, false, 0, "align-wdf",
 	"[align][,minhole]",
 	"Parameter align defines the aligning factor for new WDF images. It"
 	" must be a power of 2 and smaller or equal than 1 GiB. The default"
@@ -1049,7 +1048,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" minimize the total file size. minhole can't be smaller than align."
     },
 
-    {	OPT_GCZ_ZIP, false, false, false, false, 0, "gcz-zip",
+    {	OPT_GCZ_ZIP, false, false, false, false, false, 0, "gcz-zip",
 	0,
 	"If creating a GCZ image, a blockwise z-compression is tried. If the"
 	" compressed data is larger than 98.5%, the uncompressed data is"
@@ -1059,7 +1058,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" makes the creation process slower."
     },
 
-    {	OPT_GCZ_BLOCK, false, false, false, false, 0, "gcz-block",
+    {	OPT_GCZ_BLOCK, false, false, false, false, false, 0, "gcz-block",
 	"size",
 	"The value defines the block size, if creating a GCZ image. The"
 	" default is 16K (also Dolphins default). Smaller values enlarge the"
@@ -1067,7 +1066,7 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" caution!"
     },
 
-    {0,0,0,0,0,0,0,0} // OPT__N_TOTAL == 133
+    {0,0,0,0,0,0,0,0,0,0} // OPT__N_TOTAL == 132
 
 };
 
@@ -1077,61 +1076,61 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 ///////////////////////////////////////////////////////////////////////////////
 
 static const InfoOption_t option_cmd_VERSION_BRIEF =
-    {	OPT_BRIEF, false, false, false, false, 'b', "brief",
+    {	OPT_BRIEF, false, false, false, false, false, 'b', "brief",
 	0,
 	"Print only the version number, revision and system. If set twice,"
 	" print only the version number."
     };
 
 static const InfoOption_t option_cmd_VERSION_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print in long format. Ignored if option --sections is set."
     };
 
 static const InfoOption_t option_cmd_INFO_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print additional infos, if available. For IMAGE-FORMAT: Print a list,"
 	" that explains the attributes."
     };
 
 static const InfoOption_t option_cmd_ERROR_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print a message text instead of a message name."
     };
 
 static const InfoOption_t option_cmd_COMPR_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print a table with the normalized mode name, compression level, chunk"
 	" size factor and memory usage."
     };
 
 static const InfoOption_t option_cmd_COMPR_VERBOSE =
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"Print always compression level and chunk size factor. Standard is to"
 	" suppress these values if not explicitly set."
     };
 
 static const InfoOption_t option_cmd_FEATURES_QUIET =
-    {	OPT_QUIET, false, false, false, false, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, false, 'q', "quiet",
 	0,
 	"If set, suppress messages about the single features. If set twice,"
 	" suppress also the summary message."
     };
 
 static const InfoOption_t option_cmd_FEATURES_VERBOSE =
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"Normally, a status line for each supported feature is printed. If"
 	" set, print an info line for each requested feature."
     };
 
 static const InfoOption_t option_cmd_CERT_FILES =
-    {	OPT_FILES, false, false, false, false, 'F', "files",
+    {	OPT_FILES, false, false, false, false, false, 'F', "files",
 	"ruleset",
 	"Filter the certificates by rules. Therefor the certificate name is"
 	" build in the form 'issuer.keyid'.\n"
@@ -1140,34 +1139,34 @@ static const InfoOption_t option_cmd_CERT_FILES =
     };
 
 static const InfoOption_t option_cmd_CERT_DEST =
-    {	OPT_DEST, false, false, false, false, 'd', "dest",
+    {	OPT_DEST, false, false, false, false, false, 'd', "dest",
 	"path",
 	"Define a destination file. All selected certificates are written to"
 	" this new created file."
     };
 
 static const InfoOption_t option_cmd_CERT_VERBOSE =
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"Print the content of all certificates to standard output. This is the"
 	" default if neither --dest nor --DEST are set."
     };
 
 static const InfoOption_t option_cmd_CERT_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If printing, print the complete key as hex dump, not only the first"
 	" bytes. If set twice, print BASE64 encoded."
     };
 
 static const InfoOption_t option_cmd_FILELIST_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print the real path instead of given path."
     };
 
 static const InfoOption_t option_cmd_FILETYPE_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set at least once or twice additional columns with ID6 (1x) or the"
 	" region (2x) are enabled. If set three or more times the real path"
@@ -1175,7 +1174,7 @@ static const InfoOption_t option_cmd_FILETYPE_LONG =
     };
 
 static const InfoOption_t option_cmd_ISOSIZE_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set the size is printed in MiB too. If set twice two columns with"
 	" WBFS calculations are added. If set three times the real path of the"
@@ -1183,32 +1182,32 @@ static const InfoOption_t option_cmd_ISOSIZE_LONG =
     };
 
 static const InfoOption_t option_cmd_CREATE_DEST =
-    {	OPT_DEST, false, false, false, false, 'd', "dest",
+    {	OPT_DEST, false, false, false, false, false, 'd', "dest",
 	"path",
 	"Define a destination path (directory/file). This path is concatenated"
 	" with the outfile."
     };
 
 static const InfoOption_t option_cmd_CREATE_ID =
-    {	OPT_ID, false, false, false, false, 0, "id",
+    {	OPT_ID, false, false, false, false, false, 0, "id",
 	"id",
 	"Define an ID for the TICKET or TMD."
     };
 
 static const InfoOption_t option_cmd_CREATE_IOS =
-    {	OPT_IOS, false, false, false, false, 0, "ios",
+    {	OPT_IOS, false, false, false, false, false, 0, "ios",
 	"ios",
 	"Define an IOS/SYS-VERSION for the TMD."
     };
 
 static const InfoOption_t option_cmd_DOLPATCH_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set, a address to file offset translation table is printed."
     };
 
 static const InfoOption_t option_cmd_DOLPATCH_VERBOSE =
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"Normally, only applied patches and warnings are printed. If verbose"
 	" is set, also logs about already patched and ignored patches because"
@@ -1216,14 +1215,14 @@ static const InfoOption_t option_cmd_DOLPATCH_VERBOSE =
     };
 
 static const InfoOption_t option_cmd_DOLPATCH_QUIET =
-    {	OPT_QUIET, false, false, false, false, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, false, 'q', "quiet",
 	0,
 	"Suppress logging and print only warnings. If set twice, warnings are"
 	" also suppressed and only reported as status message."
     };
 
 static const InfoOption_t option_cmd_DOLPATCH_SOURCE =
-    {	OPT_SOURCE, false, false, false, false, 's', "source",
+    {	OPT_SOURCE, false, false, false, false, false, 's', "source",
 	"path",
 	"Define a search path for source files (e.g. 'valuefile=' attribute)."
 	" If the source is a directory, it is used for every searched file."
@@ -1232,14 +1231,14 @@ static const InfoOption_t option_cmd_DOLPATCH_SOURCE =
     };
 
 static const InfoOption_t option_cmd_DOLPATCH_DEST =
-    {	OPT_DEST, false, false, false, false, 'd', "dest",
+    {	OPT_DEST, false, false, false, false, false, 'd', "dest",
 	"path",
 	"Define a destination path (directory or file). If not set, the source"
 	" file is replaced by the patched version."
     };
 
 static const InfoOption_t option_cmd_DUMP_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Images: If set at least once a memory map for each partition is"
 	" printed. If set twice or more a memory map for whole ISO image is"
@@ -1249,7 +1248,7 @@ static const InfoOption_t option_cmd_DUMP_LONG =
     };
 
 static const InfoOption_t option_cmd_ID6_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set, a table with 5 IDs (DISC, BOOT, TICKET, TMD and WBFS) is"
 	" printed. BOOT, TICKET and TMD IDs are taken from the main partition."
@@ -1257,7 +1256,7 @@ static const InfoOption_t option_cmd_ID6_LONG =
     };
 
 static const InfoOption_t option_cmd_ID8_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set, a table with 5 IDs (DISC, BOOT, TICKET, TMD and WBFS) is"
 	" printed. BOOT, TICKET and TMD IDs are taken from the main partition."
@@ -1265,27 +1264,27 @@ static const InfoOption_t option_cmd_ID8_LONG =
     };
 
 static const InfoOption_t option_cmd_FRAGMENTS_VERBOSE =
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"Print up to 3 tables: virtual->file, file->filesystem and"
 	" virtual->filesystem."
     };
 
 static const InfoOption_t option_cmd_FRAGMENTS_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print aligning infos too. If set twice and --brief is not set, print"
 	" them as hex values."
     };
 
 static const InfoOption_t option_cmd_FRAGMENTS_BRIEF =
-    {	OPT_BRIEF, false, false, false, false, 'b', "brief",
+    {	OPT_BRIEF, false, false, false, false, false, 'b', "brief",
 	0,
 	"Ignore --verbose and print only a summary with the fragment counts."
     };
 
 static const InfoOption_t option_cmd_LIST_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set, the size in MiB and the region is printed too. If set twice,"
 	" a date columns is added. If set three times, a second line with"
@@ -1293,7 +1292,7 @@ static const InfoOption_t option_cmd_LIST_LONG =
     };
 
 static const InfoOption_t option_cmd_FILES_SORT =
-    {	OPT_SORT, false, false, false, false, 'S', "sort",
+    {	OPT_SORT, false, false, false, false, false, 'S', "sort",
 	"list",
 	"Define the sort mode for the file listing. The parameter is a comma"
 	" separated list of the following keywords: NONE, NAME, SIZE, OFFSET,"
@@ -1301,7 +1300,7 @@ static const InfoOption_t option_cmd_FILES_SORT =
     };
 
 static const InfoOption_t option_cmd_DIFF_FILES =
-    {	OPT_FILES, false, false, false, false, 'F', "files",
+    {	OPT_FILES, false, false, false, false, false, 'F', "files",
 	"ruleset",
 	"Enter file mode (compare file by file) and append file select rules."
 	" This option can be used multiple times to extend the rule list."
@@ -1312,14 +1311,14 @@ static const InfoOption_t option_cmd_DIFF_FILES =
     };
 
 static const InfoOption_t option_cmd_DIFF_PATCH_FILE =
-    {	OPT_PATCH_FILE, true, false, false, false, 0, "patch-file",
+    {	OPT_PATCH_FILE, false, true, false, false, false, 0, "patch-file",
 	"file",
 	"Enter file mode (compare file by file) and create a patch file. The"
 	" options --limit, --file-limit and --raw are ignored."
     };
 
 static const InfoOption_t option_cmd_DIFF_QUIET =
-    {	OPT_QUIET, false, false, false, false, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, false, 'q', "quiet",
 	0,
 	"Be quiet and print only error messages and failure messages on"
 	" mismatch. The comparison is aborted at the first mismatch for each"
@@ -1329,7 +1328,7 @@ static const InfoOption_t option_cmd_DIFF_QUIET =
     };
 
 static const InfoOption_t option_cmd_DIFF_VERBOSE =
-    {	OPT_VERBOSE, false, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, false, false, false, false, 'v', "verbose",
 	0,
 	"The default is to print only differ messages. If set success messages"
 	" and summaries are printed too. If set at least twice, a progress"
@@ -1337,7 +1336,7 @@ static const InfoOption_t option_cmd_DIFF_VERBOSE =
     };
 
 static const InfoOption_t option_cmd_DIFF_LIMIT =
-    {	OPT_LIMIT, false, false, false, false, 0, "limit",
+    {	OPT_LIMIT, false, false, false, false, false, 0, "limit",
 	"num",
 	"If not set, the comparison of the current file is aborted if a"
 	" mismatch is found. If set, the comparison is aborted after 'limit'"
@@ -1346,7 +1345,7 @@ static const InfoOption_t option_cmd_DIFF_LIMIT =
     };
 
 static const InfoOption_t option_cmd_DIFF_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"If set, a status line with the offset is printed for each found"
 	" mismatch. If set twice, an additional hex dump of the first bytes is"
@@ -1356,7 +1355,7 @@ static const InfoOption_t option_cmd_DIFF_LONG =
     };
 
 static const InfoOption_t option_cmd_EXTRACT_SORT =
-    {	OPT_SORT, false, false, false, false, 'S', "sort",
+    {	OPT_SORT, false, false, false, false, false, 'S', "sort",
 	"list",
 	"Define the extracting order. The parameter is a comma separated list"
 	" of the following keywords: NONE, NAME, SIZE, OFFSET, ASCENDING,"
@@ -1364,35 +1363,35 @@ static const InfoOption_t option_cmd_EXTRACT_SORT =
     };
 
 static const InfoOption_t option_cmd_EXTRACT_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"Print a summary line while extracting files. If set at least twice,"
 	" print a status line for each extracted files."
     };
 
 static const InfoOption_t option_cmd_EDIT_WDF1 =
-    {	OPT_WDF1, false, false, false, false, 0, "wdf1",
+    {	OPT_WDF1, false, false, false, false, false, 0, "wdf1",
 	"[=param]",
 	"If the image format is WDF, then force WDF version 1. The optional"
 	" aligning factor is ignored."
     };
 
 static const InfoOption_t option_cmd_EDIT_WDF2 =
-    {	OPT_WDF2, false, false, false, false, 0, "wdf2",
+    {	OPT_WDF2, false, false, false, false, false, 0, "wdf2",
 	"[=param]",
 	"If the image format is WDF, then force WDF version 2. The optional"
 	" aligning factor is ignored."
     };
 
 static const InfoOption_t option_cmd_RENAME_ISO =
-    {	OPT_ISO, false, false, false, false, 'I', "iso",
+    {	OPT_ISO, false, false, false, false, false, 'I', "iso",
 	0,
 	"Modify ID and title of the ISO image. If neither --iso nor --wbfs is"
 	" set, then both are assumed as active."
     };
 
 static const InfoOption_t option_cmd_RENAME_WBFS =
-    {	OPT_WBFS, false, false, false, false, 'B', "wbfs",
+    {	OPT_WBFS, false, false, false, false, false, 'B', "wbfs",
 	0,
 	"Modify ID and title of the inode in the WBFS management area. Option"
 	" --wbfs make only sense for images within WBFS. If neither --iso nor"
@@ -1400,21 +1399,21 @@ static const InfoOption_t option_cmd_RENAME_WBFS =
     };
 
 static const InfoOption_t option_cmd_VERIFY_QUIET =
-    {	OPT_QUIET, false, false, false, false, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, false, 'q', "quiet",
 	0,
 	"Be quiet and report only errors. If set twice then wit will print"
 	" nothing and only the exit status is set."
     };
 
 static const InfoOption_t option_cmd_VERIFY_LIMIT =
-    {	OPT_LIMIT, false, false, false, false, 0, "limit",
+    {	OPT_LIMIT, false, false, false, false, false, 0, "limit",
 	"num",
 	"Maximal printed errors of each partition. A zero means unlimited. The"
 	" default is 10."
     };
 
 static const InfoOption_t option_cmd_VERIFY_LONG =
-    {	OPT_LONG, false, false, false, false, 'l', "long",
+    {	OPT_LONG, false, false, false, false, false, 'l', "long",
 	0,
 	"On error print an additional line to localize the exact position"
 	" where the error is found. If set twice a hex dump of the hash values"
@@ -1422,14 +1421,14 @@ static const InfoOption_t option_cmd_VERIFY_LONG =
     };
 
 static const InfoOption_t option_cmd_SKELETON_DEST =
-    {	OPT_DEST, false, false, false, false, 'd', "dest",
+    {	OPT_DEST, false, false, false, false, false, 'd', "dest",
 	"path",
 	"Define a destination directory for the skeleton files. The default is"
 	" '--DEST ./.skel/'."
     };
 
 static const InfoOption_t option_cmd_MIX_ALIGN_PART =
-    {	OPT_ALIGN_PART, false, false, false, false, 0, "align-part",
+    {	OPT_ALIGN_PART, false, false, false, false, false, 0, "align-part",
 	"size",
 	"The beginning of each partition is set to an offset that is a"
 	" multiple of the align size. Size must be a power of 2 and at least"
@@ -1438,13 +1437,13 @@ static const InfoOption_t option_cmd_MIX_ALIGN_PART =
     };
 
 static const InfoOption_t option_cmd_MIX_ID =
-    {	OPT_ID, false, false, false, false, 0, "id",
+    {	OPT_ID, false, false, false, false, false, 0, "id",
 	"id",
 	"Define an ID for the disc header. The default is 'WIT000'."
     };
 
 static const InfoOption_t option_cmd_MIX_NAME =
-    {	OPT_NAME, false, false, false, false, 0, "name",
+    {	OPT_NAME, false, false, false, false, false, 0, "name",
 	"name",
 	"Define a disc title for the disc header. The default is a generic"
 	" title based on all sources."
@@ -1542,8 +1541,7 @@ static const struct option OptionLong[] =
 	 { "nocolors",		0, 0, GO_NO_COLOR },
 	{ "io",			1, 0, GO_IO },
 	{ "force",		0, 0, 'f' },
-	{ "dsync",		0, 0, GO_DSYNC },
-	{ "direct",		0, 0, GO_DIRECT },
+	{ "dsync",		2, 0, GO_DSYNC },
 	{ "titles",		1, 0, 'T' },
 	{ "utf-8",		0, 0, GO_UTF_8 },
 	 { "utf8",		0, 0, GO_UTF_8 },
@@ -1803,91 +1801,90 @@ static const OptionIndex_t OptionIndex[UIOPT_INDEX_SIZE] =
 	/* 0x85   */	OPT_NO_COLOR,
 	/* 0x86   */	OPT_IO,
 	/* 0x87   */	OPT_DSYNC,
-	/* 0x88   */	OPT_DIRECT,
-	/* 0x89   */	OPT_UTF_8,
-	/* 0x8a   */	OPT_NO_UTF_8,
-	/* 0x8b   */	OPT_LANG,
-	/* 0x8c   */	OPT_CERT,
-	/* 0x8d   */	OPT_OLD,
-	/* 0x8e   */	OPT_NEW,
-	/* 0x8f   */	OPT_NO_EXPAND,
-	/* 0x90   */	OPT_RDEPTH,
-	/* 0x91   */	OPT_INCLUDE_FIRST,
-	/* 0x92   */	OPT_JOB_LIMIT,
-	/* 0x93   */	OPT_FAKE_SIGN,
-	/* 0x94   */	OPT_IGNORE_FST,
-	/* 0x95   */	OPT_IGNORE_SETUP,
-	/* 0x96   */	OPT_LINKS,
-	/* 0x97   */	OPT_USER_BIN,
-	/* 0x98   */	OPT_PSEL,
-	/* 0x99   */	OPT_RAW,
-	/* 0x9a   */	OPT_PMODE,
-	/* 0x9b   */	OPT_FLAT,
-	/* 0x9c   */	OPT_COPY_GC,
-	/* 0x9d   */	OPT_NO_LINK,
-	/* 0x9e   */	OPT_NEEK,
-	/* 0x9f   */	OPT_HOOK,
-	/* 0xa0   */	OPT_ENC,
-	/* 0xa1   */	OPT_MODIFY,
-	/* 0xa2   */	OPT_NAME,
-	/* 0xa3   */	OPT_ID,
-	/* 0xa4   */	OPT_DISC_ID,
-	/* 0xa5   */	OPT_BOOT_ID,
-	/* 0xa6   */	OPT_TICKET_ID,
-	/* 0xa7   */	OPT_TMD_ID,
-	/* 0xa8   */	OPT_TT_ID,
-	/* 0xa9   */	OPT_WBFS_ID,
-	/* 0xaa   */	OPT_REGION,
-	/* 0xab   */	OPT_COMMON_KEY,
-	/* 0xac   */	OPT_IOS,
-	/* 0xad   */	OPT_HTTP,
-	/* 0xae   */	OPT_DOMAIN,
-	/* 0xaf   */	OPT_WIIMMFI,
-	/* 0xb0   */	OPT_TWIIMMFI,
-	/* 0xb1   */	OPT_RM_FILES,
-	/* 0xb2   */	OPT_ZERO_FILES,
-	/* 0xb3   */	OPT_OVERLAY,
-	/* 0xb4   */	OPT_REPL_FILE,
-	/* 0xb5   */	OPT_ADD_FILE,
-	/* 0xb6   */	OPT_IGNORE_FILES,
-	/* 0xb7   */	OPT_TRIM,
-	/* 0xb8   */	OPT_ALIGN,
-	/* 0xb9   */	OPT_ALIGN_PART,
-	/* 0xba   */	OPT_ALIGN_FILES,
-	/* 0xbb   */	OPT_AUTO_SPLIT,
-	/* 0xbc   */	OPT_NO_SPLIT,
-	/* 0xbd   */	OPT_DISC_SIZE,
-	/* 0xbe   */	OPT_PREALLOC,
-	/* 0xbf   */	OPT_TRUNC,
-	/* 0xc0   */	OPT_CHUNK_MODE,
-	/* 0xc1   */	OPT_CHUNK_SIZE,
-	/* 0xc2   */	OPT_MAX_CHUNKS,
-	/* 0xc3   */	OPT_BLOCK_SIZE,
-	/* 0xc4   */	OPT_COMPRESSION,
-	/* 0xc5   */	OPT_MEM,
-	/* 0xc6   */	OPT_DIFF,
-	/* 0xc7   */	OPT_WDF1,
-	/* 0xc8   */	OPT_WDF2,
-	/* 0xc9   */	OPT_ALIGN_WDF,
-	/* 0xca   */	OPT_WIA,
-	/* 0xcb   */	OPT_GCZ_ZIP,
-	/* 0xcc   */	OPT_GCZ_BLOCK,
-	/* 0xcd   */	OPT_FST,
-	/* 0xce   */	OPT_ITIME,
-	/* 0xcf   */	OPT_MTIME,
-	/* 0xd0   */	OPT_CTIME,
-	/* 0xd1   */	OPT_ATIME,
-	/* 0xd2   */	OPT_TIME,
-	/* 0xd3   */	OPT_NUMERIC,
-	/* 0xd4   */	OPT_TECHNICAL,
-	/* 0xd5   */	OPT_REALPATH,
-	/* 0xd6   */	OPT_UNIT,
-	/* 0xd7   */	OPT_OLD_STYLE,
-	/* 0xd8   */	OPT_SECTIONS,
-	/* 0xd9   */	OPT_LIMIT,
-	/* 0xda   */	OPT_FILE_LIMIT,
-	/* 0xdb   */	OPT_PATCH_FILE,
-	/* 0xdc   */	 0,0,0,0, 
+	/* 0x88   */	OPT_UTF_8,
+	/* 0x89   */	OPT_NO_UTF_8,
+	/* 0x8a   */	OPT_LANG,
+	/* 0x8b   */	OPT_CERT,
+	/* 0x8c   */	OPT_OLD,
+	/* 0x8d   */	OPT_NEW,
+	/* 0x8e   */	OPT_NO_EXPAND,
+	/* 0x8f   */	OPT_RDEPTH,
+	/* 0x90   */	OPT_INCLUDE_FIRST,
+	/* 0x91   */	OPT_JOB_LIMIT,
+	/* 0x92   */	OPT_FAKE_SIGN,
+	/* 0x93   */	OPT_IGNORE_FST,
+	/* 0x94   */	OPT_IGNORE_SETUP,
+	/* 0x95   */	OPT_LINKS,
+	/* 0x96   */	OPT_USER_BIN,
+	/* 0x97   */	OPT_PSEL,
+	/* 0x98   */	OPT_RAW,
+	/* 0x99   */	OPT_PMODE,
+	/* 0x9a   */	OPT_FLAT,
+	/* 0x9b   */	OPT_COPY_GC,
+	/* 0x9c   */	OPT_NO_LINK,
+	/* 0x9d   */	OPT_NEEK,
+	/* 0x9e   */	OPT_HOOK,
+	/* 0x9f   */	OPT_ENC,
+	/* 0xa0   */	OPT_MODIFY,
+	/* 0xa1   */	OPT_NAME,
+	/* 0xa2   */	OPT_ID,
+	/* 0xa3   */	OPT_DISC_ID,
+	/* 0xa4   */	OPT_BOOT_ID,
+	/* 0xa5   */	OPT_TICKET_ID,
+	/* 0xa6   */	OPT_TMD_ID,
+	/* 0xa7   */	OPT_TT_ID,
+	/* 0xa8   */	OPT_WBFS_ID,
+	/* 0xa9   */	OPT_REGION,
+	/* 0xaa   */	OPT_COMMON_KEY,
+	/* 0xab   */	OPT_IOS,
+	/* 0xac   */	OPT_HTTP,
+	/* 0xad   */	OPT_DOMAIN,
+	/* 0xae   */	OPT_WIIMMFI,
+	/* 0xaf   */	OPT_TWIIMMFI,
+	/* 0xb0   */	OPT_RM_FILES,
+	/* 0xb1   */	OPT_ZERO_FILES,
+	/* 0xb2   */	OPT_OVERLAY,
+	/* 0xb3   */	OPT_REPL_FILE,
+	/* 0xb4   */	OPT_ADD_FILE,
+	/* 0xb5   */	OPT_IGNORE_FILES,
+	/* 0xb6   */	OPT_TRIM,
+	/* 0xb7   */	OPT_ALIGN,
+	/* 0xb8   */	OPT_ALIGN_PART,
+	/* 0xb9   */	OPT_ALIGN_FILES,
+	/* 0xba   */	OPT_AUTO_SPLIT,
+	/* 0xbb   */	OPT_NO_SPLIT,
+	/* 0xbc   */	OPT_DISC_SIZE,
+	/* 0xbd   */	OPT_PREALLOC,
+	/* 0xbe   */	OPT_TRUNC,
+	/* 0xbf   */	OPT_CHUNK_MODE,
+	/* 0xc0   */	OPT_CHUNK_SIZE,
+	/* 0xc1   */	OPT_MAX_CHUNKS,
+	/* 0xc2   */	OPT_BLOCK_SIZE,
+	/* 0xc3   */	OPT_COMPRESSION,
+	/* 0xc4   */	OPT_MEM,
+	/* 0xc5   */	OPT_DIFF,
+	/* 0xc6   */	OPT_WDF1,
+	/* 0xc7   */	OPT_WDF2,
+	/* 0xc8   */	OPT_ALIGN_WDF,
+	/* 0xc9   */	OPT_WIA,
+	/* 0xca   */	OPT_GCZ_ZIP,
+	/* 0xcb   */	OPT_GCZ_BLOCK,
+	/* 0xcc   */	OPT_FST,
+	/* 0xcd   */	OPT_ITIME,
+	/* 0xce   */	OPT_MTIME,
+	/* 0xcf   */	OPT_CTIME,
+	/* 0xd0   */	OPT_ATIME,
+	/* 0xd1   */	OPT_TIME,
+	/* 0xd2   */	OPT_NUMERIC,
+	/* 0xd3   */	OPT_TECHNICAL,
+	/* 0xd4   */	OPT_REALPATH,
+	/* 0xd5   */	OPT_UNIT,
+	/* 0xd6   */	OPT_OLD_STYLE,
+	/* 0xd7   */	OPT_SECTIONS,
+	/* 0xd8   */	OPT_LIMIT,
+	/* 0xd9   */	OPT_FILE_LIMIT,
+	/* 0xda   */	OPT_PATCH_FILE,
+	/* 0xdb   */	 0,0,0,0, 0,
 	/* 0xe0   */	 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 	/* 0xf0   */	 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
 };
@@ -4647,7 +4644,7 @@ static const InfoCommand_t CommandInfo[CMD__N+1] =
 	option_allowed_cmd_MIX
     },
 
-    {0,0,0,0,0,0,0,0,0,00,}
+    {0,0,0,0,0,0,0,0,0,0,0,0}
 };
 
 //

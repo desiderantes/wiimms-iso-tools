@@ -80,13 +80,8 @@
   #define HAVE_FIBMAP 0
 #endif
 
-#if SUPPORT_DIRECT && !defined(O_DIRECT) // [[DIRECT]]
-  #undef SUPPORT_DIRECT
-  #define SUPPORT_DIRECT 0
-#endif
-
-#ifndef O_DIRECT
-  #define O_DIRECT 0
+#ifndef O_DSYNC
+  #define O_DSYNC 0
 #endif
 
 //
@@ -94,9 +89,8 @@
 ///////////////                   file support                  ///////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-int opt_dsync = 0;
-int opt_direct = 0;
 enumIOMode opt_iomode = IOM__IS_DEFAULT | IOM_FORCE_STREAM;
+OffOn_t opt_dsync = OFFON_AUTO;
 
 //-----------------------------------------------------------------------------
 
@@ -107,6 +101,18 @@ void ScanIOMode ( ccp arg )
     if ( verbose > 0 || opt_iomode != new_io )
 	printf("IO mode set to %#0x.\n",opt_iomode);
     opt_iomode |= IOM_FORCE_STREAM;
+}
+
+//-----------------------------------------------------------------------------
+
+int ScanOptDSync ( ccp arg )
+{
+    const int stat = ScanKeywordOffAutoOn(arg,OFFON_ON,OFFON_FORCE,"Option --dsync");
+    if ( stat == OFFON_ERROR )
+	return 1;
+
+    opt_dsync = stat;
+    return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -320,7 +326,6 @@ enumError XResetWFile ( XPARM WFile_t * f, bool remove_file )
     const bool open_flags		= f->open_flags;
     const bool disable_errors		= f->disable_errors;
     const bool create_directory		= f->create_directory;
-    const bool allow_direct_io		= f->allow_direct_io;
     const int  already_created_mode	= f->already_created_mode;
 
     InitializeWFile(f);
@@ -329,7 +334,6 @@ enumError XResetWFile ( XPARM WFile_t * f, bool remove_file )
     f->open_flags		= open_flags;
     f->disable_errors		= disable_errors;
     f->create_directory		= create_directory;
-    f->allow_direct_io		= allow_direct_io;
     f->already_created_mode	= already_created_mode;
 
     return stat;
@@ -528,42 +532,6 @@ static enumError XOpenWFileHelper
     force_flags |= O_LARGEFILE;
  #endif
 
- #if SUPPORT_DIRECT > 2
-    fprintf(stderr,"FORCE O_DIRECT = %d && %d, flags=%x[%s,%s]\n",
-		opt_direct, f->allow_direct_io, force_flags,
-		force_flags & O_DIRECT ? "DIRECT" : "",
-		force_flags & O_SYNC ? "SYNC" : "" );
- #else
-    PRINT("FORCE O_DIRECT = %d && %d, flags=%x[%s,%s]\n",
-		opt_direct, f->allow_direct_io, force_flags,
-		force_flags & O_DIRECT ? "DIRECT" : "",
-		force_flags & O_SYNC ? "SYNC" : "" );
- #endif
-
- #if SUPPORT_DIRECT // [[DIRECT]]
-    bool direct_io_enabled = false;
-    if ( opt_direct && f->allow_direct_io && f->fd == -1 )
-    {
-	force_flags |= O_DIRECT;
-	direct_io_enabled = true;
-    }
-    else
-	f->allow_direct_io = false;
- #endif
-
- #if SUPPORT_DIRECT > 1
-    fprintf(stderr,"FORCE O_DIRECT = %d && %d, flags=%x[%s,%s]\n",
-		opt_direct, f->allow_direct_io, force_flags,
-		force_flags & O_DIRECT ? "DIRECT" : "",
-		force_flags & O_SYNC ? "SYNC" : "" );
- #else
-    PRINT("FORCE O_DIRECT = %d && %d, flags=%x[%s,%s]\n",
-		opt_direct, f->allow_direct_io, force_flags,
-		force_flags & O_DIRECT ? "DIRECT" : "",
-		force_flags & O_SYNC ? "SYNC" : "" );
- #endif
-
-
     f->active_open_flags = ( f->open_flags ? f->open_flags : default_flags )
 			 | force_flags;
 
@@ -575,13 +543,7 @@ static enumError XOpenWFileHelper
 	f->is_reading = true;
     }
     else if ( mode == O_WRONLY )
-    {
 	f->is_writing = true;
-     #if SUPPORT_DIRECT // [[DIRECT]]
-	if ( f->active_open_flags & O_DIRECT )
-	    f->active_open_flags = f->active_open_flags & ~O_WRONLY | O_RDWR;
-     #endif
-    }
     else
     {
 	mode = O_RDWR;
@@ -589,8 +551,10 @@ static enumError XOpenWFileHelper
 	f->is_writing = true;
     }
 
- #ifdef O_DSYNC
-    if ( opt_dsync && iomode == IOM_IS_WBFS_PART )
+ #if O_DSYNC
+    if ( opt_dsync == OFFON_AUTO )
+	opt_dsync = verbose > 1 || progress ? OFFON_ON : OFFON_OFF;
+    if ( opt_dsync >= OFFON_ON && iomode == IOM_IS_WBFS_PART )
     {
 	PRINT("\e[35;1m ---> O_DSYNC iom=%d\e[0m\n",iomode);
 	f->active_open_flags |= O_DSYNC;
@@ -616,20 +580,6 @@ static enumError XOpenWFileHelper
 		return err;
 	    f->fd = open( f->fname, f->active_open_flags, 0666 );
 	}
-
- #if SUPPORT_DIRECT // [[DIRECT]]
-	if ( f->fd != -1 && direct_io_enabled )
-	{
-	    int block_size;
-	    if (!ioctl(f->fd,BLKSSZGET,&block_size))
-	    {
-		f->direct_block_size = block_size;
-	     #if SUPPORT_DIRECT > 1
-		fprintf(stderr,"DIRECT: BLK_SIZE = %u\n",f->direct_block_size);
-	     #endif
-	    }
-	}
- #endif
     }
     TRACE("#F# OpenWFile '%s' fd=%d, dis=%d\n", f->fname, f->fd, f->disable_errors );
 
@@ -717,17 +667,6 @@ enumError XOpenWFileModify ( XPARM WFile_t * f, ccp fname, enumIOMode iomode )
 
     XResetWFile( XCALL f, false );
 
- #if SUPPORT_DIRECT // [[DIRECT]]
-    if ( iomode == IOM_IS_WBFS_PART )
-    {
-	if ( !stat(fname,&f->st)
-		&& ( S_ISBLK(f->st.st_mode) || S_ISCHR(f->st.st_mode) ) )
-	{
-    	    f->allow_direct_io = true;
-	}
-    }
- #endif
-
     f->fname = no_fname ? fname : STRDUP(fname);
     return XOpenWFileHelper(XCALL f,iomode,O_RDWR,O_RDWR);
 }
@@ -786,9 +725,6 @@ enumError XCreateWFile
 		    "Can't overwrite block device: %s\n", fname );
 
 	    f->fname = STRDUP(fname);
-	 #if SUPPORT_DIRECT // [[DIRECT]]
-	    f->allow_direct_io = true;
-	 #endif
 	    return XOpenWFileHelper(XCALL f, iomode, O_WRONLY, 0 );
 	}
 	else
@@ -921,7 +857,7 @@ enumError XOpenStreamWFile ( XPARM WFile_t * f )
     TRACE("#F# OpenStreamWFile(%p) fd=%d, fp=%p\n",f,f->fd,f->fp);
 
     f->last_error = 0;
-    if ( f->fd != -1 && !f->fp && !(f->active_open_flags & O_DIRECT) )
+    if ( f->fd != -1 && !f->fp )
     {
 	// flag 'b' is set for compatibilitiy only, linux ignores it
 	ccp mode = !f->is_writing ? "rb" : f->is_reading ? "r+b" : "wb";
@@ -2483,15 +2419,9 @@ enumError XReadF ( XPARM WFile_t * f, void * iobuf, size_t count )
 	size_t size = count;
 	while (size)
 	{
-#if SUPPORT_DIRECT > 2
- fprintf(stderr,"iobuf:%p, size:%zx\n",iobuf,size);
-#endif
 	    ssize_t rstat = read(f->fd,iobuf,size);
 	    if ( rstat <= 0 )
 	    {
-#if SUPPORT_DIRECT > 1
- fprintf(stderr,"errno=%d\n",errno);
-#endif
 		err = rstat < 0;
 		break;
 	    }
@@ -2532,84 +2462,6 @@ enumError XReadF ( XPARM WFile_t * f, void * iobuf, size_t count )
     }
 
     return ERR_OK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-enumError XWriteDirectAtF
-(
-    XPARM				// XPARM
-    WFile_t		*f,		// file to write (and read for partial blocks)
-    off_t		off,		// offset to write
-    const void		*io_buf,	// data to write
-    size_t		io_size,	// size of data to write
-    void		*d_buf,		// aligned direct buffer
-					// if NULL: malloc temporary buffer of 'd_size'
-    size_t		d_size		// size of 'd_buf' or size to alloc
-)
-{
-    DASSERT(f);
-    if ( !io_size || !( (off|(uintptr_t)iobuf|io_size) & DIRECTBUF_ALIGN-1 ))
-    {
-	// all well aligned
-	const enumError stat = XSeekF(XCALL f,off);
-	return stat ? stat : XWriteF(XCALL f,io_buf,io_size);
-    }
-
-    //--- get aligned buffer
-
-    d_size = d_size / DIRECTBUF_ALIGN * DIRECTBUF_ALIGN;
-
-    u8 *alloced_mem, *dbuf;
-    if ( !d_buf || d_size < DIRECTBUF_ALIGN )
-    {
-	if ( d_size < DIRECTBUF_ALIGN )
-	    d_size = DIRECTBUF_ALIGN;
-
-	alloced_mem = MALLOC(d_size+DIRECTBUF_ALIGN-1);
-	dbuf = (u8*)(((uintptr_t)alloced_mem+DIRECTBUF_ALIGN-1) & ~(DIRECTBUF_ALIGN-1));
-
-     #if SUPPORT_DIRECT>1
-	fprintf(stderr,"DIRECT_BUF: %p %p [0x%zx] size=0x%zx\n",
-		alloced_mem, dbuf, dbuf-alloced_mem, d_size );
-     #endif
-    }
-    else
-    {
-	alloced_mem = 0;
-	dbuf = d_buf;
-    }
-
-
-    //--- write beginning fraction
-
-    enumError err = ERR_OK;
-    if ( off & DIRECTBUF_ALIGN-1 )
-    {
-	MARK_USED(dbuf);
-xBINGO;
-    }
-
-    //--- write aligned part
-    if ( !ERR_OK && io_size > DIRECTBUF_ALIGN )
-    {
-xBINGO;
-    }
-
-
-    //--- write end fraction
-
-    if ( !ERR_OK && io_size )
-    {
-	err = ERR_ERROR;
-xBINGO;
-    }
-
-
-    if (alloced_mem)
-	FREE(alloced_mem);
-
-    return err;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2688,27 +2540,18 @@ enumError XWriteF ( XPARM WFile_t * f, const void * iobuf, size_t count )
 	err = count && fwrite(iobuf,count,1,f->fp) != 1;
     else if ( f->fd != -1 )
     {
-     #if SUPPORT_DIRECT
-	if ( f->active_open_flags & O_DIRECT )
-	    err = XWriteDirectAtF(XCALL f,f->file_off,
-			iobuf,count,directbuf,sizeof(directbuf)) != 0;
-	else
-     #endif // SUPPORT_DIRECT
+	err = false;
+	size_t size = count;
+	while (size)
 	{
-	    err = false;
-	    size_t size = count;
-	    while (size)
+	    ssize_t wstat = write(f->fd,iobuf,size);
+	    if ( wstat <= 0 )
 	    {
-		ssize_t wstat = write(f->fd,iobuf,size);
-		if ( wstat <= 0 )
-		{
-		    err = true;
-		    break;
-		}
-		size -= wstat;
-		iobuf = (void*)( (char*)iobuf + wstat );
-		//fsync(f->fd); // to slow
+		err = true;
+		break;
 	    }
+	    size -= wstat;
+	    iobuf = (void*)( (char*)iobuf + wstat );
 	}
     }
     else
@@ -2724,7 +2567,7 @@ enumError XWriteF ( XPARM WFile_t * f, const void * iobuf, size_t count )
 				"Write failed [%c=%d,%llu+%zu%s]: %s\n",
 				GetFT(f), GetFD(f),
 				(u64)f->file_off, count,
-				f->active_open_flags & O_DIRECT ? ",DIRECT" : "",
+				f->active_open_flags & O_DSYNC ? ",DSYNC" : "",
 				f->fname );
 
 	f->cur_off = f->file_off = (off_t)-1ll;
@@ -2761,11 +2604,6 @@ enumError XWriteAtF ( XPARM WFile_t * f, off_t off, const void * iobuf, size_t c
 {
     ASSERT(f);
     noTRACE("#F# WriteAtF(fd=%d,o=%llx,%p,n=%zx)\n",f->fd,(u64)off,iobuf,count);
-
- #if SUPPORT_DIRECT
-    if ( f->active_open_flags & O_DIRECT )
-	return XWriteDirectAtF(XCALL f,off,iobuf,count,directbuf,sizeof(directbuf));
- #endif
 
     const enumError stat = XSeekF(XCALL f,off);
     return stat ? stat : XWriteF(XCALL f,iobuf,count);

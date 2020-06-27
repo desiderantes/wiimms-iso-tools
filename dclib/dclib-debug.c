@@ -942,7 +942,7 @@ u_msec_t GetTimerMSec();
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void trace_helper ( int print_stderr, ccp  format, va_list arg )
+static void trace_helper ( int print_stderr, ccp format, va_list arg )
 {
     if (!TRACE_FILE)
     {

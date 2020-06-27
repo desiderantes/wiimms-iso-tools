@@ -55,6 +55,10 @@
 
 //-----------------------------------------------------------------------------
 
+#define ASM_NOP			0x60000000
+
+//-----------------------------------------------------------------------------
+
 static int IsDolTextSection ( uint section )
 	{ return section < DOL_N_TEXT_SECTIONS; }
 
@@ -209,7 +213,8 @@ u32 GetDolOffsetByAddr
 (
     const dol_header_t	*dol_head,	// valid DOL header
     u32			addr,		// address to search
-    u32			size		// >0: return NULL if section is to small
+    u32			size,		// >0: wanted size
+    u32			*valid_size	// not NULL: return valid size
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -218,7 +223,48 @@ u32 GetDolAddrByOffset
 (
     const dol_header_t	*dol_head,	// valid DOL header
     u32			off,		// address to search
-    u32			size		// >0: return NULL if section is to small
+    u32			size,		// >0: wanted size
+    u32			*valid_size	// not NULL: return valid size
+);
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint AddDolAddrByOffset
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie,	// TRUE: use InsertMemMapTie()
+    u32			off,		// address to search
+    u32			size		// size, may overlay multiple sections
+);
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint TranslateDolOffsets
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie,	// TRUE: use InsertMemMapTie()
+    const MemMap_t	*mm_off		// NULL or mem map with offsets
+);
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint TranslateAllDolOffsets
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie		// TRUE: use InsertMemMapTie()
+);
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint TranslateDolSections
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie,	// TRUE: use InsertMemMapTie()
+    uint		dol_sections	// bitfield of sections
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -240,6 +286,57 @@ u32 FindDolAddressOfVBI
 
     cvp			data,		// DOL data beginning with dol_header_t
     uint		data_size	// size of 'data'
+);
+
+///////////////////////////////////////////////////////////////////////////////
+
+char * ScanDolSectionName
+(
+    // returns the first uninterpreted character
+
+    ccp			arg,		// comma/space separated names
+    int			*ret_section,	// not NULL: return section index
+					//	<0: error / >=0: section index
+    enumError		*ret_err	// not NULL: return error code
+);
+
+//-----------------------------------------------------------------------------
+
+uint ScanDolSectionList
+(
+    // return a bitfield as section list
+
+    ccp			arg,		// comma/space separated names
+    enumError		*ret_err	// not NULL: return status
+);
+
+//-----------------------------------------------------------------------------
+
+ccp DolSectionList2Text ( uint sect_list );
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////		    add/remove DOL sections		///////////////
+///////////////////////////////////////////////////////////////////////////////
+
+uint CompressDOL
+(
+    // return: size of compressed DOL (inline replaced)
+
+    dol_header_t	*dol,		// valid dol header
+    FILE		*log		// not NULL: print memmap to this file
+);
+
+//-----------------------------------------------------------------------------
+
+uint RemoveDolSections
+(
+    // return: 0:if not modifed, >0:size of compressed DOL
+
+    dol_header_t	*dol,		// valid dol header
+    uint		stay,		// bit field of sections (0..17): SET => don't remove
+    uint		*res_stay,	// not NULL: store bit field of vlaid sections here
+    FILE		*log		// not NULL: print memmap to this file
 );
 
 //

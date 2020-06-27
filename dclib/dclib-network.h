@@ -393,6 +393,45 @@ typedef struct ether_head_t
 __attribute__ ((packed)) ether_head_t;
 
 //-----------------------------------------------------------------------------
+// [[ether_head_vlan_t]]
+
+typedef struct ether_head_vlan_t
+{
+    // http://en.wikipedia.org/wiki/Ethertype
+
+    u8		mac_dest[6];
+    u8		mac_src[6];
+    u16		vlan_tag_type;	// 0x8100 for VLAN
+    u16		vlan_param;	// Bits 0-11: ID / Bits 12-15: flags
+    u16		ether_type;
+
+    //-- secondary params
+    bool	have_vlan;	// true: VLAN trag available
+    u8		head_size;	// >0: size of ethernet header (local endian): 14|18
+}
+__attribute__ ((packed)) ether_head_vlan_t;
+
+//-----------------------------------------------------------------------------
+// [[arp_head_t]]
+
+typedef struct arp_head_t
+{
+ // http://de.wikipedia.org/wiki/Address_Resolution_Protocol
+
+ /* 0x00 */	u16 hardware_addr_type;		// always 0x0001 for IPv4
+ /* 0x02 */	u16 protocol_addr_type;		// always 0x8000 for IPv4
+ /* 0x04 */	u8  mac_size;			// always 6 for IPv4
+ /* 0x05 */	u8  addr_size;			// always 4 for IPv4
+ /* 0x06 */	u16 operation;
+ /* 0x08 */	u8  src_mac[6];			// MAC  of source
+ /* 0x0e */	u32 src_ip;			// IPv4 of source
+ /* 0x12 */	u8  dest_mac[6];		// MAC  of destination
+ /* 0x18 */	u32 dest_ip;			// IPv4 of destination
+ /* 0x1c */
+}
+__attribute__ ((packed)) arp_head_t;
+
+//-----------------------------------------------------------------------------
 // [[ip4_head_t]]
 
 typedef struct ip4_head_t
@@ -441,6 +480,49 @@ typedef struct udp_packet_t
 }
 __attribute__ ((packed)) udp_packet_t;
 
+//-----------------------------------------------------------------------------
+// [[tcp_flags_t]]
+
+typedef enum tcp_flags_t
+{
+	TCP_F_FINISH	= 0x01,
+	TCP_F_SYNC	= 0x02,
+	TCP_F_RESET	= 0x04,
+	TCP_F_PSH	= 0x08,
+	TCP_F_ACK	= 0x10,
+	TCP_F_URGENT	= 0x20,
+	TCP_M_RESERVED	= 0xc0,
+}
+__attribute__ ((packed)) tcp_flags_t;
+
+//-----------------------------------------------------------------------------
+// [[tcp_head_t]]
+
+typedef struct tcp_head_t
+{
+    // http://de.wikipedia.org/wiki/Transmission_Control_Protocol#Aufbau_des_TCP-Headers
+
+    u16		port_src;
+    u16		port_dest;
+    u32		seq_num;
+    u32		acc_num;
+    u8		data_off;	// bit 4-7 only, multiply it by 4
+    u8		flags;		// bit field (think big endian) -> tcp_flags_t
+    u16		window;
+    u16		checksum;
+    u16		urgent;
+    u8		data[];
+}
+__attribute__ ((packed)) tcp_head_t;
+
+//-----------------------------------------------------------------------------
+
+bool fix_ether_head_vlan  ( ether_head_vlan_t *head );
+void ntoh_ether_head_vlan ( ether_head_vlan_t *dest, const void *src );
+void ntoh_ether_head	  ( ether_head_t      *dest, const void *src );
+void ntoh_ip4_head	  ( ip4_head_t        *dest, const void *src );
+void ntoh_udp_head	  ( udp_head_t        *dest, const void *src );
+void ntoh_tcp_head	  ( tcp_head_t        *dest, const void *src );
 
 //
 ///////////////////////////////////////////////////////////////////////////////

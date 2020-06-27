@@ -421,7 +421,7 @@ typedef void (*wbfs_check_func)
     uint		count,		// block usage count
     ccp			msg,		// clear text message
     uint		msg_len,	// strlen(msg)
-    void		* param		// user defined paramater
+    void		* param		// user defined parameter
 );
 
 //-----------------------------------------------------------------------------

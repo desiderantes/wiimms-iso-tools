@@ -1763,7 +1763,7 @@ int wd_insert_memmap_disc_part
     wd_disc_t		* disc,		// valid disc pointer
 
     wd_memmap_func_t	func,		// not NULL: Call func() for each inserted item
-    void		* param,	// user defined paramater for 'func()'
+    void		* param,	// user defined parameter for 'func()'
 
     // creation modes:
     // value WD_PAT_IGNORE means: do not create such entires
@@ -1783,7 +1783,7 @@ int wd_insert_memmap_part
     wd_part_t		* part,		// valid pointer to a disc partition
 
     wd_memmap_func_t	func,		// not NULL: Call func() for each inserted item
-    void		* param,	// user defined paramater for 'func()'
+    void		* param,	// user defined parameter for 'func()'
 
     // creation modes:
     // value WD_PAT_IGNORE means: do not create such entires

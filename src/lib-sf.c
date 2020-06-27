@@ -579,25 +579,6 @@ enumError OpenSF
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static void CheckDirectSF
-(
-    SuperFile_t		* sf,		// file to setup
-    enumOFT		oft		// output file mode
-)
-{
-    if (opt_direct)
-    {
-	switch((int)oft)
-	{
-	    case OFT_WBFS:
-		PRINT("ENABLE allow_direct_io\n");
-		sf->f.allow_direct_io = true;
-	};
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 enumError CreateSF
 (
     SuperFile_t		* sf,		// file to setup
@@ -611,7 +592,6 @@ enumError CreateSF
     CloseSF(sf,0);
     TRACE("#S# CreateSF(%p,%s,%x,%x,%x)\n",sf,fname,oft,iomode,overwrite);
 
-    CheckDirectSF(sf,oft);
     const enumError err = CreateWFile(&sf->f,fname,iomode,overwrite);
     return err ? err : SetupWriteSF(sf,oft);
 }
@@ -1011,14 +991,14 @@ wd_disc_t * OpenDiscSF
 
 	sf->iod.read_func = ReadDiscWrapper;
 	sf->disc2 = wd_open_disc(WrapperReadSF,sf,file_size,sf->f.fname,opt_force,0);
+	sf->disc2->image_type = oft_info[sf->iod.oft].name;
+	sf->disc2->image_ext  = oft_info[sf->iod.oft].ext1 + 1;
 	if (load_part_data)
 	    wd_load_all_part(sf->disc2,false,false,false);
     }
 
     if (sf->disc2)
     {
-	sf->disc2->image_type = oft_info[sf->iod.oft].name;
-	sf->disc2->image_ext  = oft_info[sf->iod.oft].ext1 + 1;
 	if (!sf->disc2->image_ext)
 	    sf->disc2->image_ext = oft_info[OFT__DEFAULT].ext1 + 1;
 	memcpy(sf->f.id6_dest,&sf->disc2->dhead,6);
@@ -3246,7 +3226,6 @@ enumError CopyImage
     if (*fi->wbfs_id6)
 	CopyPatchWbfsId(fo->wbfs_id6,fi->wbfs_id6);
 
-    CheckDirectSF(fo,oft);
     enumError err = CreateWFile( &fo->f, 0, oft_info[oft].iom, overwrite );
     if ( err || SIGINT_level > 1 )
 	goto abort;

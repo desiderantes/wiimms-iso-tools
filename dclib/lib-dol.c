@@ -471,7 +471,8 @@ u32 GetDolOffsetByAddr
 (
     const dol_header_t	*dol_head,	// valid DOL header
     u32			addr,		// address to search
-    u32			size		// >0: return NULL if section is to small
+    u32			size,		// >0: wanted size
+    u32			*valid_size	// not NULL: return valid size
 )
 {
     DASSERT(dol_head);
@@ -481,9 +482,30 @@ u32 GetDolOffsetByAddr
     {
 	const u32 sect_addr = ntohl(dol_head->sect_addr[sect]);
 	const u32 sect_size = ntohl(dol_head->sect_size[sect]);
-	if ( addr >= sect_addr && addr + size <= sect_addr + sect_size )
+	if ( addr >= sect_addr && addr < sect_addr + sect_size )
+	{
+	    u32 max_size = sect_addr + sect_size - addr;
+	    if (!size)
+	    {
+		if (valid_size)
+		    *valid_size = max_size;
+	    }
+	    else if ( size <= max_size )
+	    {
+		if (valid_size)
+		    *valid_size = size;
+	    }
+	    else if (valid_size)
+		*valid_size = max_size;
+	    else
+		return 0;
+
 	    return ntohl(dol_head->sect_off[sect]) + addr - sect_addr;
+	}
     }
+
+    if (valid_size)
+	*valid_size = 0;
     return 0;
 }
 
@@ -493,7 +515,8 @@ u32 GetDolAddrByOffset
 (
     const dol_header_t	*dol_head,	// valid DOL header
     u32			off,		// address to search
-    u32			size		// >0: return NULL if section is to small
+    u32			size,		// >0: wanted size
+    u32			*valid_size	// not NULL: return valid size
 )
 {
     DASSERT(dol_head);
@@ -503,10 +526,166 @@ u32 GetDolAddrByOffset
     {
 	const u32 sect_off  = ntohl(dol_head->sect_off[sect]);
 	const u32 sect_size = ntohl(dol_head->sect_size[sect]);
-	if ( off >= sect_off && off + size <= sect_off + sect_size )
+
+	if ( off >= sect_off && off < sect_off + sect_size )
+	{
+	    u32 max_size = sect_off + sect_size - off;
+	    if (!size)
+	    {
+		if (valid_size)
+		    *valid_size = max_size;
+	    }
+	    else if ( size <= max_size )
+	    {
+		if (valid_size)
+		    *valid_size = size;
+	    }
+	    else if (valid_size)
+		*valid_size = max_size;
+	    else
+		return 0;
+
 	    return ntohl(dol_head->sect_addr[sect]) + off - sect_off;
+	}
     }
+
+    if (valid_size)
+	*valid_size = 0;
     return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint AddDolAddrByOffset
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie,	// TRUE: use InsertMemMapTie()
+    u32			off,		// address to search
+    u32			size		// size, may overlay multiple sections
+)
+{
+    DASSERT(dol_head);
+    DASSERT(mm);
+
+    uint count = 0;
+    while ( size > 0 )
+    {
+	u32 valid_size;
+	u32 addr = GetDolAddrByOffset(dol_head,off,size,&valid_size);
+	if ( !addr || !valid_size )
+	    break;
+	if (use_tie)
+	   InsertMemMapTie(mm,addr,valid_size);
+	else
+	   InsertMemMap(mm,addr,valid_size);
+	off  += valid_size;
+	size -= valid_size;
+    }
+
+    return count;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint TranslateDolOffsets
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie,	// TRUE: use InsertMemMapTie()
+    const MemMap_t	*mm_off		// NULL or mem map with offsets
+)
+{
+    DASSERT(dol_head);
+    DASSERT(mm);
+    if (!mm_off)
+	return 0;
+
+    uint mi, count = 0;
+    for ( mi = 0; mi < mm_off->used; mi++ )
+    {
+	const MemMapItem_t *src = mm_off->field[mi];
+	AddDolAddrByOffset(dol_head,mm,use_tie,src->off,src->size);
+    }
+
+    return count;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint TranslateAllDolOffsets
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie		// TRUE: use InsertMemMapTie()
+)
+{
+    DASSERT(dol_head);
+    DASSERT(mm);
+
+    uint count = 0;
+
+    int i;
+    for ( i = 0; i < DOL_N_SECTIONS; i++ )
+    {
+	const u32 size = ntohl(dol_head->sect_size[i]);
+	if (size)
+	{
+	    count++;
+	    const u32 addr = ntohl(dol_head->sect_addr[i]);
+	    MemMapItem_t *mi = use_tie
+				? InsertMemMapTie(mm,addr,size)
+				: InsertMemMap(mm,addr,size);
+	    if (*mi->info)
+		StringCopyS(mi->info,sizeof(mi->info),"...");
+	    else if ( i < DOL_N_TEXT_SECTIONS )
+		snprintf(mi->info,sizeof(mi->info),"text section T%u",i);
+	    else
+	    {
+		const int j = i - DOL_N_TEXT_SECTIONS;
+		snprintf(mi->info,sizeof(mi->info),"data section D%u",j);
+	    }
+	}
+    }
+
+    return count;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint TranslateDolSections
+(
+    const dol_header_t	*dol_head,	// valid DOL header
+    MemMap_t		*mm,		// valid destination mem map, not cleared
+    bool		use_tie,	// TRUE: use InsertMemMapTie()
+    uint		dol_sections	// bitfield of sections
+)
+{
+    DASSERT(dol_head);
+    DASSERT(mm);
+
+    dol_sect_info_t sinfo;
+    uint sect, count = 0;
+    for ( sect = 0; sect < DOL_NN_SECTIONS; sect++ )
+    {
+	if ( dol_sections & 1 << sect
+		&& GetDolSectionInfo(&sinfo,dol_head,sizeof(*dol_head),sect) )
+	{
+	    count++;
+	    uint size = sect == DOL_IDX_ENTRY ? 16 : sinfo.size;
+	    MemMapItem_t *mi = use_tie
+			    ? InsertMemMapTie(mm,sinfo.addr,size)
+			    : InsertMemMap(mm,sinfo.addr,size);
+
+	    if (*mi->info)
+		StringCopyS(mi->info,sizeof(mi->info),"...");
+	    else
+		snprintf(mi->info,sizeof(mi->info),
+			    "section %s",dol_section_name[sect]);
+	}
+    }
+
+    return count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -612,6 +791,227 @@ u32 FindDolAddressOfVBI
 	}
     }
     return 0;
+}
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+char * ScanDolSectionName
+(
+    // returns the first uninterpreted character
+
+    ccp			arg,		// comma/space separated names
+    int			*ret_section,	// not NULL: return section index
+					//	<0: error / >=0: section index
+    enumError		*ret_err	// not NULL: return error code
+)
+{
+    int section = -1;
+    enumError err = ERR_OK;
+
+    if (!arg)
+	err = ERR_MISSING_PARAM;
+    else
+    {
+	while ( *arg && !isalnum((int)*arg) )
+	    arg++;
+
+	ccp ptr = arg;
+	char namebuf[10], *np = namebuf;
+	for(;;)
+	{
+	    char ch = toupper((int)*ptr);
+	    if ( ch < 'A' || ch > 'Z' )
+		break;
+	    if ( np < namebuf + sizeof(namebuf) - 1 )
+		*np++ = ch;
+	    ptr++;
+	}
+
+	int index = -1;
+	if (!memcmp(namebuf,"TEXT",np-namebuf))
+	    index = 0;
+	else if (!memcmp(namebuf,"DATA",np-namebuf))
+	    index = DOL_N_TEXT_SECTIONS;
+	else 
+	{
+	    if (!memcmp(namebuf,"BSS",np-namebuf))
+	    {
+		section = DOL_IDX_BSS;
+		arg = ptr;
+	    }
+	    else if (!memcmp(namebuf,"ENTRY",np-namebuf))
+	    {
+		section = DOL_IDX_ENTRY;
+		arg = ptr;
+	    }
+	    else
+		err = ERR_INVALID_DATA;
+	    goto abort;
+	}
+
+	char *end;
+	uint num = str2ul(ptr,&end,10);
+	if ( end > ptr )
+	{
+	    arg = end;
+	    index += num;
+	    if ( index < DOL_N_SECTIONS )
+		section = index;
+	    else
+		err = ERR_INVALID_DATA;
+	}
+    }
+
+ abort:;
+    if (ret_section)
+	*ret_section = section;
+    if (ret_err)
+	*ret_err = err;
+    return (char*)arg;
+}
+
+//-----------------------------------------------------------------------------
+
+uint ScanDolSectionList
+(
+    // return a bitfield as section list
+
+    ccp			arg,		// comma/space separated names
+    enumError		*ret_err	// not NULL: return status
+)
+{
+    enumError err = ERR_OK;
+    uint sect_list = 0;
+
+    while ( arg && *arg )
+    {
+	int section;
+	enumError scan_err;
+	arg = ScanDolSectionName(arg,&section,&scan_err);
+	if (scan_err)
+	{
+	    if ( err < scan_err )
+		err = scan_err;
+	    break;
+	}
+
+	if ( section >= 0 )
+	    sect_list |= 1 << section;
+    }
+
+    if (ret_err)
+	*ret_err = !sect_list && err < ERR_MISSING_PARAM ? ERR_MISSING_PARAM : err;
+    return sect_list;
+}
+
+//-----------------------------------------------------------------------------
+
+ccp DolSectionList2Text ( uint sect_list )
+{
+    char buf[100], *dest = buf;
+    uint sect;
+    for ( sect = 0; sect < DOL_NN_SECTIONS; sect++ )
+	if ( sect_list & 1 << sect )
+	    dest = snprintfE(dest,buf+sizeof(buf),",%s",dol_section_name[sect]);
+
+    char *res = GetCircBuf(dest-buf);
+    memcpy(res,buf+1,dest-buf);
+    return res;
+}
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////		    add/remove DOL sections		///////////////
+///////////////////////////////////////////////////////////////////////////////
+
+
+uint CompressDOL
+(
+    // return: size of compressed DOL (inline replaced)
+
+    dol_header_t	*dol,		// valid dol header
+    FILE		*log		// not NULL: print memmap to this file
+)
+{
+    DASSERT(dol);
+
+    MemMap_t mm;
+    InitializeMemMap(&mm);
+
+    uint max_off = 0, total_data_size = 0;
+    uint s;
+    for ( s = 0; s < DOL_N_SECTIONS; s++ )
+    {
+	const u32 off  = ntohl(dol->sect_off[s]);
+	const u32 size = ntohl(dol->sect_size[s]);
+	if ( off && size )
+	{
+	    MemMapItem_t *mi = InsertMemMap(&mm,off,size);
+	    snprintf(mi->info,sizeof(mi->info),"%u",s);
+	    total_data_size += size;
+	    if ( max_off < off + size )
+		 max_off = off + size;
+	}
+    }
+
+    if (log)
+	PrintMemMap(&mm,log,5,"DOL sections");
+
+    u8 *temp = MALLOC(total_data_size);
+    
+    uint i, new_off = 0;
+    for ( i = 0; i < mm.used; i++ )
+    {
+	MemMapItem_t *mi = mm.field[i];
+	uint sect = strtoul(mi->info,0,10);
+	DASSERT( sect < DOL_N_SECTIONS );
+	const u32 off  = ntohl(dol->sect_off[sect]);
+	const u32 size = ntohl(dol->sect_size[sect]);
+
+	memcpy( temp + new_off, (u8*)dol + off, size );
+	dol->sect_off[sect] = htonl( sizeof(dol_header_t) + new_off );
+	new_off += size;
+    }
+    DASSERT( total_data_size == new_off );
+
+    memcpy(dol+1,temp,new_off);
+    FREE(temp);
+    return new_off + sizeof(dol_header_t);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint RemoveDolSections
+(
+    // return: 0:if not modifed, >0:size of compressed DOL
+
+    dol_header_t	*dol,		// valid dol header
+    uint		stay,		// bit field of sections (0..17): SET => don't remove
+    uint		*res_stay,	// not NULL: store bit field of vlaid sections here
+    FILE		*log		// not NULL: print memmap to this file
+)
+{
+    uint s, m, count = 0;
+    for ( s = 0, m = 1; s < DOL_N_SECTIONS; s++, m <<= 1 )
+    {
+	const u32 off  = ntohl(dol->sect_off[s]);
+	const u32 size = ntohl(dol->sect_size[s]);
+	if ( !off || !size )
+	    stay &= ~m;
+	    
+	if ( !(stay&m) && off )
+	{
+	    dol->sect_off[s] = dol->sect_size[s] = dol->sect_addr[s] = 0;
+	    count++;
+	}
+    }
+
+    if (res_stay)
+	*res_stay = stay;
+
+    return count ? CompressDOL(dol,log) : 0;
 }
 
 //
@@ -725,6 +1125,11 @@ void ResetWCH ( wch_control_t * wc )
 	wc->temp_size = 0;
     }
 }
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////			virtual dumps			///////////////
+///////////////////////////////////////////////////////////////////////////////
 
 //
 ///////////////////////////////////////////////////////////////////////////////

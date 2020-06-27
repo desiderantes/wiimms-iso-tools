@@ -180,7 +180,6 @@ typedef enum enumOptions
 	OPT_IO,
 	OPT_FORCE,
 	OPT_DSYNC,
-	OPT_DIRECT,
 	OPT_TITLES,
 	OPT_UTF_8,
 	OPT_NO_UTF_8,
@@ -194,7 +193,7 @@ typedef enum enumOptions
 	OPT_GCZ_ZIP,
 	OPT_GCZ_BLOCK,
 
-	OPT__N_TOTAL // == 133
+	OPT__N_TOTAL // == 132
 
 } enumOptions;
 
@@ -798,7 +797,6 @@ typedef enum enumGetOpt
 	GO_NO_COLOR,
 	GO_IO,
 	GO_DSYNC,
-	GO_DIRECT,
 	GO_UTF_8,
 	GO_NO_UTF_8,
 	GO_LANG,

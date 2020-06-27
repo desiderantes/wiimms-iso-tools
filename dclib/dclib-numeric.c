@@ -861,11 +861,13 @@ int CheckIndex2End ( int max, int * p_begin, int * p_end )
 
 char * PrintEscapedString
 (
+    // returns 'buf'
+
     char	*buf,			// valid destination buffer
     uint	buf_size,		// size of 'buf', >= 10
-    ccp		source,			// NULL or string to print
+    ccp		source,			// NULL string to print
     int		len,			// length of string. if -1, str is null terminated
-    bool	utf8,			// true: don't escape special ANSI characters
+    CharMode_t	char_mode,		// modes, bit field (CHMD_*)
     char	quote,			// NULL or quotation char, that must be quoted
     uint	*scanned_len		// not NULL: Store number of scanned 'str' bytes here
 )
@@ -873,7 +875,8 @@ char * PrintEscapedString
     DASSERT(buf);
     DASSERT(buf_size>=10);
 
-    static const char hex[16] = "0123456789ABCDEF";
+    const CharMode_t utf8	= char_mode & CHMD_UTF8;
+    const CharMode_t allow_e	= char_mode & CHMD_ESC;
 
     char *dest = buf;
     char *dest_end = dest + buf_size - 4;
@@ -909,18 +912,30 @@ char * PrintEscapedString
 	    case '\t': *dest++ = '\\'; *dest++ = 't'; break;
 	    case '\v': *dest++ = '\\'; *dest++ = 'v'; break;
 
+	    case '\033':
+		*dest++ = '\\';
+		if (allow_e)
+		    *dest++ = 'e';
+		else
+		{
+		    *dest++ = 'x';
+		    *dest++ = '1';
+		    *dest++ = 'B';
+		}
+		break;
+
 	    default:
 		if ( ch == quote )
 		{
 		    *dest++ = '\\';
 		    *dest++ = quote;
 		}
-		else if ( !utf8 && (ch&0x7f) < ' ' || (ch&0x7f) >= 0x7f )
+		else if ( ch < ' ' || !utf8 && (ch&0x7f) < ' ' || (ch&0x7f) == 0x7f )
 		{
 		    *dest++ = '\\';
 		    *dest++ = 'x';
-		    *dest++ = hex[ch>>4];
-		    *dest++ = hex[ch&15];
+		    *dest++ = HiDigits[ch>>4];
+		    *dest++ = HiDigits[ch&15];
 		}
 		else
 		    *dest++ = ch;
@@ -941,7 +956,7 @@ uint ScanEscapedString
 
     char	*buf,			// valid destination buffer, maybe source
     uint	buf_size,		// size of 'buf'
-    ccp		source,			// string to print
+    ccp		source,			// string to scan
     int		len,			// length of string. if -1, str is null terminated
     bool	utf8,			// true: source and output is UTF-8
     uint	*scanned_len		// not NULL: Store number of scanned 'source' bytes here
@@ -1104,8 +1119,9 @@ uint DecodeBase64
 )
 {
     DASSERT(buf);
+    DASSERT(buf_size>=3);
     u8 *dest = (u8*)buf;
-    u8 *dest_end = dest + buf_size / 3 * 3;
+    u8 *dest_end = dest + ( scanned_len ? buf_size / 3 * 3 : buf_size );
 
     if (!source)
 	source = "";
@@ -1141,7 +1157,7 @@ uint DecodeBase64
 	}
 
 	*dest++ = ch1 << 2 | ch2 >> 4;
-	if ( src == end )
+	if ( src == end || dest == dest_end )
 	    break;
 
 	ch1 = decode64[(u8)*src++];
@@ -1155,7 +1171,7 @@ uint DecodeBase64
 	}
 
 	*dest++ = ch2 << 4 | ch1 >> 2;
-	if ( src == end )
+	if ( src == end || dest == dest_end )
 	    break;
 
 	ch2 = decode64[(u8)*src++];
@@ -1294,8 +1310,6 @@ uint EncodeJSON
     DASSERT(buf);
     DASSERT(buf_size>2);
 
-    static const char hex[16] = "0123456789ABCDEF";
-
     char *dest = buf;
     char *dest_end = dest + buf_size - 2;
 
@@ -1328,8 +1342,8 @@ uint EncodeJSON
 		    *dest++ = 'u';
 		    *dest++ = '0';
 		    *dest++ = '0';
-		    *dest++ = hex[ch>>4];
-		    *dest++ = hex[ch&15];
+		    *dest++ = HiDigits[ch>>4];
+		    *dest++ = HiDigits[ch&15];
 		}
 		break;
 	}
@@ -1371,16 +1385,16 @@ uint DecodeByMode
 	break;
 
       case ENCODE_BASE64:
-	len = DecodeBase64(buf,buf_size,source,slen,TableDecode64,true,0);
+	len = DecodeBase64(buf,buf_size-1,source,slen,TableDecode64,true,0);
 	break;
 
       case ENCODE_BASE64URL:
       case ENCODE_BASE64STAR:
-	len = DecodeBase64(buf,buf_size,source,slen,TableDecode64url,true,0);
+	len = DecodeBase64(buf,buf_size-1,source,slen,TableDecode64url,true,0);
 	break;
 
       case ENCODE_BASE64XML:
-	len = DecodeBase64(buf,buf_size,source,slen,TableDecode64xml,true,0);
+	len = DecodeBase64(buf,buf_size-1,source,slen,TableDecode64xml,true,0);
 	break;
 
       case ENCODE_JSON:
@@ -1484,11 +1498,11 @@ uint EncodeByMode
     switch (emode)
     {
       case ENCODE_STRING:
-	PrintEscapedString(buf,buf_size,source,slen,false,0,&len);
+	PrintEscapedString(buf,buf_size,source,slen,0,0,&len);
 	break;
 
       case ENCODE_UTF8:
-	PrintEscapedString(buf,buf_size,source,slen,true,0,&len);
+	PrintEscapedString(buf,buf_size,source,slen,CHMD__ALL,0,&len);
 	break;
 
       case ENCODE_BASE64:
@@ -2930,6 +2944,8 @@ char * ScanEscape
 	case '\\': code = '\\'; break;
 	case 'a':  code = '\a'; break;
 	case 'b':  code = '\b'; break;
+	case 'E':
+	case 'e':  code = '\e'; break;
 	case 'f':  code = '\f'; break;
 	case 'n':  code = '\n'; break;
 	case 'r':  code = '\r'; break;
@@ -3177,7 +3193,7 @@ float RoundF2bytes ( float f )
 	const float frac = frexpf(x.f,&exp);
 	x.f = ldexpf(frac+0.00585938,exp);
     }
-    
+
     x.u &= 0xffff0000;
     return x.f;
 }
@@ -3195,7 +3211,7 @@ float RoundF3bytes ( float f )
 	const float frac = frexpf(x.f,&exp);
 	x.f = ldexpf(frac+0.00002289,exp);
     }
-    
+
     x.u &= 0xffffff00;
     return x.f;
 }
@@ -3213,7 +3229,7 @@ double RoundD6bytes ( double d )
 	const double frac = frexp(x.d,&exp);
 	x.d = ldexp(frac+0.000000000010913936,exp);
     }
-    
+
     x.u &= 0xffffffffffff0000ull;
     return x.d;
 }
@@ -3231,7 +3247,7 @@ double RoundD7bytes ( double d )
 	const double frac = frexp(x.d,&exp);
 	x.d = ldexp(frac+0.000000000000042633,exp);
     }
-    
+
     x.u &= 0xffffffffffffff00ull;
     return x.d;
 }

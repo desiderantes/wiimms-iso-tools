@@ -49,45 +49,45 @@
 
 static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 {
-    {0,0,0,0,0,0,0,0}, // OPT_NONE,
+    {0,0,0,0,0,0,0,0,0,0}, // OPT_NONE,
 
-    {	OPT_VERSION, false, false, false, false, 'V', "version",
+    {	OPT_VERSION, false, false, false, false, false, 'V', "version",
 	0,
 	"Stop parsing the command line, print a version info and exit."
     },
 
-    {	OPT_HELP, false, false, false, false, 'h', "help",
+    {	OPT_HELP, false, false, false, false, false, 'h', "help",
 	0,
 	"Stop parsing the command line, print a help message and exit."
     },
 
-    {	OPT_XHELP, false, false, false, false, 0, "xhelp",
+    {	OPT_XHELP, false, false, false, false, false, 0, "xhelp",
 	0,
 	"Same as --help."
     },
 
-    {	OPT_HELP_FUSE, false, false, false, false, 'H', "help-fuse",
+    {	OPT_HELP_FUSE, false, false, false, false, false, 'H', "help-fuse",
 	0,
 	"Stop parsing the command line and print a FUSE help message."
     },
 
-    {	OPT_WIDTH, false, false, false, false, 0, "width",
+    {	OPT_WIDTH, false, false, false, false, false, 0, "width",
 	"width",
 	"Define the width (number of columns) for help and some other messages"
 	" and disable the automatic detection of the terminal width."
     },
 
-    {	OPT_QUIET, false, false, false, false, 'q', "quiet",
+    {	OPT_QUIET, false, false, false, false, false, 'q', "quiet",
 	0,
 	"Be quiet and print only error messages."
     },
 
-    {	OPT_VERBOSE, true, false, false, false, 'v', "verbose",
+    {	OPT_VERBOSE, false, true, false, false, false, 'v', "verbose",
 	0,
 	"Be verbose and print more progress information."
     },
 
-    {	OPT_IO, true, false, false, false, 0, "io",
+    {	OPT_IO, false, true, false, false, false, 0, "io",
 	"flags",
 	"Setup the IO mode for experiments. The standard file IO is based on"
 	" open() function. The value '1' defines that WBFS IO is based on"
@@ -95,49 +95,49 @@ static const InfoOption_t OptionInfo[OPT__N_TOTAL+1] =
 	" value '4' for WIA files. You can combine the values by adding them."
     },
 
-    {	OPT_PARAM, false, false, false, true, 'p', "param",
+    {	OPT_PARAM, false, false, false, false, true, 'p', "param",
 	"param",
 	"The parameter is forwarded to the FUSE command line scanner."
     },
 
-    {	OPT_OPTION, false, false, false, false, 'o', "option",
+    {	OPT_OPTION, false, false, false, false, false, 'o', "option",
 	"param",
 	"This option is forwarded to FUSE command line scanner as '-o param'."
     },
 
-    {	OPT_ALLOW_OTHER, false, false, false, false, 'O', "allow-other",
+    {	OPT_ALLOW_OTHER, false, false, false, false, false, 'O', "allow-other",
 	0,
 	"This option is a short cut for '-o allow_other'. It enables"
 	" re-exporting of the mounted file system for example by a samba"
 	" server."
     },
 
-    {	OPT_CREATE, false, false, false, false, 'c', "create",
+    {	OPT_CREATE, false, false, false, false, false, 'c', "create",
 	0,
 	"If the mount point does not exist, create it and remove it on"
 	" unmount."
     },
 
-    {	OPT_REMOUNT, false, false, false, false, 'r', "remount",
+    {	OPT_REMOUNT, false, false, false, false, false, 'r', "remount",
 	0,
 	"If the mount point is already mounted, try silently to unmount it"
 	" first."
     },
 
-    {	OPT_UMOUNT, false, false, false, true, 'u', "umount",
+    {	OPT_UMOUNT, false, false, false, false, true, 'u', "umount",
 	0,
 	"Enter 'unmount mode' and unmount each entered directory by calling"
 	" 'fusermount -u mountdir' or alternatively 'umount mountdir'."
     },
 
-    {	OPT_LAZY, false, false, false, false, 'l', "lazy",
+    {	OPT_LAZY, false, false, false, false, false, 'l', "lazy",
 	0,
 	"Lazy unmount: Detach the mounted file system from the file system"
 	" hierarchy now, and cleanup all references to the file system as soon"
 	" as it is not busy anymore."
     },
 
-    {0,0,0,0,0,0,0,0} // OPT__N_TOTAL == 16
+    {0,0,0,0,0,0,0,0,0,0} // OPT__N_TOTAL == 16
 
 };
 
@@ -274,7 +274,7 @@ static const InfoCommand_t CommandInfo[CMD__N+1] =
 	0
     },
 
-    {0,0,0,0,0,0,0,0,0,00,}
+    {0,0,0,0,0,0,0,0,0,0,0,0}
 };
 
 //

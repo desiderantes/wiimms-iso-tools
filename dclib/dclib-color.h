@@ -64,7 +64,7 @@ extern const struct KeywordTab_t color_mode_keywords[];
 extern ColorMode_t opt_colorize; // <0:no color, 0:auto, >0:force color
 
 int ScanOptColorize ( ColorMode_t *opt, ccp arg, ccp err_prefix );
-ccp GetColorModeName ( ColorMode_t col_mode );
+ccp GetColorModeName ( ColorMode_t col_mode, ccp res_not_found );
 
 //-----------------------------------------------------------------------------
 // returns COLMD_OFF | COLMD_8_COLORS | COLMD_256_COLORS
@@ -225,16 +225,16 @@ typedef enum TermTextMode_t
 	TTM_BG_CYAN		= 0xe0,
 	TTM_BG_WHITE		= 0xf0,
 
-	//--- greyscale: \e[48;5;<VAL>m
+	//--- grayscale: \e[48;5;<VAL>m
 
 	TTM_GRAY0		= 0x04,	// black
-	TTM_GRAY1		= 0x05, // dark grey
-	TTM_GRAY2		= 0x06, // light grey
+	TTM_GRAY1		= 0x05, // dark gray
+	TTM_GRAY2		= 0x06, // light gray
 	TTM_GRAY3		= 0x07, // real white
 
 	TTM_BG_GRAY0		= 0x40,	// black
-	TTM_BG_GRAY1		= 0x50, // dark grey
-	TTM_BG_GRAY2		= 0x60, // light grey
+	TTM_BG_GRAY1		= 0x50, // dark gray
+	TTM_BG_GRAY2		= 0x60, // light gray
 	TTM_BG_GRAY3		= 0x70, // real white
 
 	//--- misc
@@ -273,6 +273,7 @@ typedef enum TermTextMode_t
 	TTM_COL_INFO		= TTM_BOLD	| TTM_CYAN	| TTM_BG_BLACK,
 	TTM_COL_HINT		= TTM_BOLD	| TTM_YELLOW	| TTM_BG_BLACK,
 	TTM_COL_WARN		= TTM_BOLD	| TTM_RED	| TTM_BG_BLACK,
+	TTM_COL_DEBUG		= TTM_BOLD	| TTM_RED	| TTM_BG_BLACK,
 
 	TTM_COL_NAME		= TTM_NO_BOLD	| TTM_CYAN	| TTM_BG_BLACK,
 	TTM_COL_VALUE		= TTM_NO_BOLD	| TTM_GREEN	| TTM_BG_BLACK,
@@ -373,6 +374,7 @@ typedef struct ColorSet_t
     ccp info;
     ccp hint;
     ccp warn;
+    ccp debug;
 
     ccp name;
     ccp value;
@@ -408,20 +410,34 @@ typedef struct ColorSet_t
     ccp	b_white;
 
     ccp	red;
+    ccp	red_orange;
     ccp	orange;
+    ccp	orange_yellow;
     ccp	yellow;
+    ccp	yellow_green;
     ccp	green;
+    ccp	green_cyan;
     ccp	cyan;
+    ccp	cyan_blue;
     ccp	blue;
+    ccp	blue_magenta;
     ccp	magenta;
+    ccp	magenta_red;
 
     ccp	b_red;
+    ccp	b_red_orange;
     ccp	b_orange;
+    ccp	b_orange_yellow;
     ccp	b_yellow;
+    ccp	b_yellow_green;
     ccp	b_green;
+    ccp	b_green_cyan;
     ccp	b_cyan;
+    ccp	b_cyan_blue;
     ccp	b_blue;
+    ccp	b_blue_magenta;
     ccp	b_magenta;
+    ccp	b_magenta_red;
 
     ccp matrix[TCI__N_FONT][TCI__N_BG];
 }
@@ -476,6 +492,7 @@ const ColorSet_t * GetColorSet ( ColorMode_t col_mode );
 const ColorSet_t * GetColorSet0();
 const ColorSet_t * GetColorSet8();
 const ColorSet_t * GetColorSet256();
+const ColorSet_t * GetColorSetAuto ( bool force_on );
 
 const ColorSet_t * GetFileColorSet ( FILE *f );
 bool SetupColorSet ( ColorSet_t *cc, FILE *f );
@@ -512,6 +529,22 @@ void PrintColorSetHelper
 					//   8: print color names (e.g. HIGHLIGHT)
 					//      16: include alternative names too (e.g. HL)
 );
+
+//
+///////////////////////////////////////////////////////////////////////////////
+///////////////			color helpers			///////////////
+///////////////////////////////////////////////////////////////////////////////
+
+u32 ColorTab_M0_M15[16]; // first 16 colors of "\e[m"
+
+// return a m256 index
+u8 ConvertColorRGB3ToM256 ( u8 r, u8 g, u8 b );
+u8 ConvertColorRGBToM256  ( u32 rgb );
+
+u32 ConvertColorM256ToRGB ( u8 m256 );
+
+static inline uint SingleColorToM6 ( u8 col )
+	{ return col > 114 ? ( col - 35 ) / 40 : col > 47; }
 
 //
 ///////////////////////////////////////////////////////////////////////////////

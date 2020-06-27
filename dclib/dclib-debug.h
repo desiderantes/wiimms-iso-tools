@@ -174,7 +174,7 @@ void HexDiff16 ( FILE * f, int indent, u64 addr,
 //  -------------------
 //
 //  If symbol 'DEBUG' or symbol _DEBUG' is defined, then and only then
-//  DEBUG and TRACING is enabled.
+//  DEBUG, DASSERT and TRACING are enabled.
 //
 //  There are to function like macros defined:
 //
@@ -183,17 +183,23 @@ void HexDiff16 ( FILE * f, int indent, u64 addr,
 //        Ignored when TRACING is disabled.
 //        It works like the well known printf() function and include flushing.
 //
-//      TRACE_IF ( bool condition, ccp format, ... );
+//     TRACE_IF ( bool condition, ccp format, ... );
 //        Like TRACE(), but print only if 'condition' is true.
 //
-//      TRACELINE
+//     TRACELINE
 //        Print out current line and source.
 //
-//      TRACE_SIZEOF ( object_or_type );
+//     TRACE_SIZEOF ( object_or_type );
 //        Print out `sizeof(object_or_type)´
 //
-//      ASSERT(cond);
+//     ASSERT(cond);
 //	  If condition is false: print info and exit program.
+//
+//     DASSERT(cond);
+//	  Like ASSERT; but only active on DEBUG.
+//
+//     BINGO
+//        Like TRACELINE, but print to stderr instead custom file.
 //
 //
 //  There are more macros with a preceding 'no' defined:
@@ -206,6 +212,11 @@ void HexDiff16 ( FILE * f, int indent, u64 addr,
 //
 //      If you add a 'no' before a TRACE-Call it is disabled always.
 //      This makes the usage and disabling of multi lines traces very easy.
+//
+//
+//  The macros with a preceding 'x' are always active:
+//	xTRACELINE
+//	xBINGO
 //
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -393,6 +404,7 @@ void WAIT_ARG_FUNC ( ccp format, va_list arg );
 #endif
 
 #define xBINGO BINGO_FUNC(__FUNCTION__,__LINE__,__FILE__)
+#define xTRACELINE TRACE_FUNC("%s() line #%d @ %s\n",__FUNCTION__,__LINE__,__FILE__)
 
 #undef PRINTF
 #define PRINTF PRINT

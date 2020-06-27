@@ -497,26 +497,32 @@ static void print_single_option
     else
 	col_reset = col_param = "";
 
+    ccp iop = io->param;
+    ccp sep = !iop ? ""
+	    : !io->optional_parm ? " "
+	    : iop[0] == '=' || iop[0] == '[' && iop[0] == '=' ? ""
+	    : "=";
+
     int len;
     if (!io->short_name)
 	len = fprintf(f,"%*s     --%s%s%s%s ",
 		indent, "",
 		io->long_name,
-		io->param ? " " : "",
-		col_param, io->param ? io->param : "" );
+		sep,
+		col_param, iop ? iop : "" );
     else if (!io->long_name)
 	len = fprintf(f,"%*s  -%c%s%s%s ",
 		indent, "",
 		io->short_name,
-		io->param ? " " : "",
-		col_param, io->param ? io->param : "" );
+		iop ? " " : "",
+		col_param, iop ? iop : "" );
     else
 	len = fprintf(f,"%*s  -%c --%s%s%s%s ",
 		indent, "",
 		io->short_name,
 		io->long_name,
-		io->param ? " " : "",
-		col_param, io->param ? io->param : "" );
+		sep,
+		col_param, iop ? iop : "" );
 
     len -= strlen(col_param);
     if ( len > opt_fw )
@@ -839,12 +845,12 @@ void PrintHelpCmd
     {
 	col_head  = GetTextMode(1,TTM_COL_HEADING);
 	col_reset = GetTextMode(1,TTM_RESET);
-	col_len = strlen(col_head) + strlen(col_reset);
+	col_len   = strlen(col_head) + strlen(col_reset);
     }
     else
     {
 	col_head = col_reset = "";
-	col_len = 0;
+	col_len  = 0;
     }
 
     char iobuf[10000];

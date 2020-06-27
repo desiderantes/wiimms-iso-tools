@@ -152,10 +152,7 @@
   { T_OPT_GP,	"IO",		"io",
 		0, 0 /* copy of wit */ },
 
-  { T_OPT_G,	"DSYNC",	"dsync",
-		0, 0 /* copy of wit */ },
-
-  { H_OPT_G,	"DIRECT",	"direct",
+  { T_OPT_GO,	"DSYNC",	"dsync",
 		0, 0 /* copy of wit */ },
 
   { T_SEP_OPT,	0,0,0,0 }, //----- separator -----

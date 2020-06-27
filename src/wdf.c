@@ -1336,8 +1336,7 @@ enumError CheckOptions ( int argc, char ** argv )
 	case GO_COLOR_256:	opt_colorize = COLMD_256_COLORS; break;
 	case GO_NO_COLOR:	opt_colorize = -1; break;
 	case GO_IO:		ScanIOMode(optarg); break;
-	case GO_DSYNC:		opt_dsync++; break;
-	case GO_DIRECT:		opt_direct++; break;
+	case GO_DSYNC:		err += ScanOptDSync(optarg); break;
 	case GO_CHUNK:		opt_chunk = true; break;
 	case GO_LONG:		opt_chunk = true; long_count++; break;
 	case GO_MINUS1:		opt_minus1 = 1; break;

@@ -126,21 +126,8 @@ StringField_t	source_list;
 StringField_t	recurse_list;
 StringField_t	created_files;
 
-#if SUPPORT_DIRECT
-
- char		iobuf [IOBUF_SIZE]			// global io buffer
- __attribute__((aligned(DIRECTBUF_ALIGN)));
-
- const char	zerobuf[ZEROBUF_SIZE]			// global zero buffer
- __attribute__((aligned(DIRECTBUF_ALIGN))) = {0};
-
- char		directbuf [DIRECTBUF_SIZE]		// global direct-io buffer
- __attribute__((aligned(DIRECTBUF_ALIGN)));
-
-#else
- char		iobuf [IOBUF_SIZE];			// global io buffer
- const char	zerobuf[ZEROBUF_SIZE]	= {0};		// global zero buffer
-#endif
+char		iobuf [IOBUF_SIZE];			// global io buffer
+const char	zerobuf[ZEROBUF_SIZE]	= {0};		// global zero buffer
 
 // 'tempbuf' is only for short usage
 //	==> don't call other functions while using tempbuf

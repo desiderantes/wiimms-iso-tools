@@ -102,13 +102,12 @@ typedef enum enumOptions
 	OPT_NO_COLOR,
 	OPT_IO,
 	OPT_DSYNC,
-	OPT_DIRECT,
 	OPT_ALIGN_WDF,
 	OPT_TEST,
 	OPT_OLD,
 	OPT_NEW,
 
-	OPT__N_TOTAL // == 47
+	OPT__N_TOTAL // == 46
 
 } enumOptions;
 
@@ -267,7 +266,6 @@ typedef enum enumGetOpt
 	GO_NO_COLOR,
 	GO_IO,
 	GO_DSYNC,
-	GO_DIRECT,
 	GO_CHUNK,
 	GO_LIMIT,
 	GO_FILE_LIMIT,
